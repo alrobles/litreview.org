@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Your Name" />
+  <meta name="dcterms.date" content="2026-08-25" />
+  <title>Literature Review: Diffusion Models for Large Language Models (v3 – DiDAL revision + corpus integration)</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    div.abstract {
+      margin: 2em 2em 2em 2em;
+      text-align: left;
+      font-size: 85%;
+    }
+    div.abstract-title {
+      font-weight: bold;
+      text-align: center;
+      padding: 0;
+      margin-bottom: 0.5em;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Literature Review: Diffusion Models for Large Language
+Models (v3 – DiDAL revision + corpus integration)</h1>
+<p class="author">Your Name</p>
+<p class="date">2026-08-25</p>
+<div class="abstract">
+<div class="abstract-title">Abstract</div>
+<p>Diffusion models now rival autoregressive models in continuous
+domains such as image, video, and audio synthesis, and have recently
+been extended to discrete data—most notably language—giving rise to
+diffusion language models, which the literature refers to
+interchangeably as Diffusion LLMs (DLLMs) and discrete diffusion
+language models (dLLMs). Unlike the dominant autoregressive (AR)
+paradigm, which generates tokens sequentially in a left-to-right
+fashion, diffusion-based language models generate text through an
+iterative denoising process that operates on entire sequences in
+parallel <span class="citation"
+data-cites="yu2025discrete tseng2025diffusion"></span>. This survey
+traces their evolution from continuous-space foundations to discrete
+formulations, categorizes representative models and techniques by
+diffusion space, generation strategy, and architecture, and examines
+applications, challenges, and future directions. We organize the field
+around the design choices that govern its quality–latency trade-off: the
+noise formulation, the generation strategy, and the post-training
+recipe.</p>
+</div>
+</header>
+<h1 id="introduction">Introduction</h1>
+<p>Autoregressive (AR) transformers remain the dominant paradigm for
+large language models, a position earned through scale and mature
+training infrastructure rather than an inherent advantage of sequential
+decoding <span class="citation" data-cites="yu2025discrete"></span>. AR
+models generate text token by token and achieve remarkable performance
+across a wide range of tasks, but they possess intrinsic limitations:
+left-to-right decoding restricts parallelization during inference <span
+class="citation" data-cites="yu2025discrete"></span>, precise structural
+control (e.g., length or format constraints) is difficult to enforce
+during sampling, and dynamic, task-aware perception requires costly
+chain-of-thought or multi-round processing <span class="citation"
+data-cites="yu2025discrete"></span>.</p>
+<p>Diffusion models—originally developed for continuous domains such as
+image generation <span class="citation"
+data-cites="ho2020denoising"></span>—offer a compelling alternative. By
+framing generation as an iterative denoising process, diffusion models
+enable parallel token generation, bidirectional context modeling, and
+fine-grained controllability <span class="citation"
+data-cites="li2025surveydlm"></span>. The application of diffusion to
+language has progressed from small-scale experiments to commercial-scale
+deployments <span class="citation"
+data-cites="khanna2025mercury"></span>, with commercial deployments
+reporting roughly an order-of-magnitude latency reduction over
+speed-optimized AR baselines under batch decoding <span class="citation"
+data-cites="yu2025discrete wang2025d2f"></span>.</p>
+<p>This literature review synthesizes the current state of diffusion
+models for LLMs, organized as follows: Section 2 covers the mathematical
+and conceptual foundations. Section 3 traces the evolution from
+continuous to discrete formulations. Section 4 categorizes
+representative models and techniques. Section 5 examines applications
+and empirical results. Section 6 discusses challenges and open problems.
+Section 7 outlines future directions.</p>
+<h1 id="foundations-of-diffusion-models">Foundations of Diffusion
+Models</h1>
+<h2 id="the-diffusion-framework">The Diffusion Framework</h2>
+<p>Diffusion models are generative models that learn to reverse a
+gradual noising process <span class="citation"
+data-cites="ho2020denoising"></span>. The framework consists of two core
+processes:</p>
+<p><strong>Forward Process (Noising):</strong> Starting from clean data
+<span class="math inline"><strong>x</strong><sub>0</sub></span>, a
+Markov chain gradually adds noise over <span
+class="math inline"><em>T</em></span> timesteps, producing increasingly
+corrupted versions <span
+class="math inline"><strong>x</strong><sub>1</sub>, <strong>x</strong><sub>2</sub>, …, <strong>x</strong><sub><em>T</em></sub></span>
+until the data approximates pure noise <span class="citation"
+data-cites="tseng2025diffusion"></span>.</p>
+<p><strong>Reverse Process (Denoising):</strong> A neural network is
+trained to invert this process, learning to predict and remove noise
+step by step, ultimately generating new samples from random noise <span
+class="citation" data-cites="ho2020denoising"></span>.</p>
+<p>Three foundational works shaped the continuous diffusion framework.
+The Denoising Diffusion Probabilistic Model (DDPM) established the core
+variational framework: training reduces to a simple weighted
+mean-squared-error objective on noise prediction, which made large-scale
+training practical for the first time <span class="citation"
+data-cites="ho2020denoising"></span>. Denoising Diffusion Implicit
+Models (DDIM) generalized sampling to non-Markovian trajectories,
+enabling deterministic sampling with orders-of-magnitude fewer steps and
+thus making iterative refinement computationally viable at inference
+time <span class="citation" data-cites="song2021ddim"></span>.
+Score-based generative modeling through stochastic differential
+equations (SDEs) then unified DDPM and score matching under a
+continuous-time formulation, providing the theoretical lens through
+which modern samplers—including the discrete formulations discussed
+below—are analyzed <span class="citation"
+data-cites="song2021scoresde"></span>. For discrete state spaces, the
+analogous continuous-time object is a continuous-time Markov chain
+(CTMC): Campbell et al. derived a continuous-time evidence lower bound
+for discrete denoising models with tau-leaping and predictor-corrector
+samplers <span class="citation" data-cites="campbell2022ctmc"></span>,
+and Sun et al. developed the corresponding score-based continuous-time
+formulation <span class="citation" data-cites="sun2022ctmc"></span>.
+These CTMC frameworks underpin the continuous-time objectives of modern
+masked diffusion LLMs.</p>
+<h2 id="the-challenge-of-discrete-data">The Challenge of Discrete
+Data</h2>
+<p>A fundamental challenge arises when applying diffusion to language:
+text is inherently discrete (composed of tokens), whereas diffusion
+models were originally designed for continuous data (e.g., image pixels)
+<span class="citation" data-cites="shen2026codar"></span>. In continuous
+domains, Gaussian noise can be naturally added and removed; in discrete
+domains, adding noise to a token renders it invalid <span
+class="citation" data-cites="jin2025discreteness"></span>.</p>
+<p>This challenge has led to two distinct approaches <span
+class="citation" data-cites="jin2025discreteness"></span>:</p>
+<ol>
+<li><p><strong>Continuous Diffusion in Embedding Space:</strong> Mapping
+discrete tokens to continuous embeddings and applying standard diffusion
+in this space <span class="citation"
+data-cites="shen2026codar"></span>.</p></li>
+<li><p><strong>Discrete Diffusion over Tokens:</strong> Defining noise
+processes directly over discrete token spaces using transition matrices
+<span class="citation" data-cites="tseng2025diffusion"></span>.</p></li>
+</ol>
+<p>To handle discrete data directly, Austin et al. proposed Structured
+Denoising Diffusion Models in Discrete State-Spaces (D3PM), which
+generalizes the forward process to a family of discrete transition
+matrices—including uniform and absorbing-state (masking) kernels <span
+class="citation" data-cites="austin2021d3pm"></span>. Concurrently,
+Hoogeboom et al. introduced multinomial diffusion with argmax flows for
+categorical data, an earlier and closely related formulation <span
+class="citation" data-cites="hoogeboom2021multinomial"></span>.</p>
+<h1 id="evolution-of-diffusion-language-models">Evolution of Diffusion
+Language Models</h1>
+<p>The evolution of diffusion models for language can be traced through
+several distinct phases <span class="citation"
+data-cites="tseng2025diffusion"></span>.</p>
+<h2 id="early-foundations-2015-2020">Early Foundations (2015-2020)</h2>
+<p>The thermodynamic origins of diffusion models were established
+through DDPM <span class="citation" data-cites="ho2020denoising"></span>
+and DDIM <span class="citation" data-cites="song2021ddim"></span>, which
+introduced the core principles of Markovian noising and denoising on
+continuous data, later unified in continuous time by the score-SDE
+formulation <span class="citation"
+data-cites="song2021scoresde"></span>. These foundational works
+demonstrated that iterative refinement from noise could produce
+high-quality samples, though they were initially applied exclusively to
+continuous domains like images.</p>
+<h2 id="first-text-specific-adaptations-2021-2022">First Text-Specific
+Adaptations (2021-2022)</h2>
+<p>The first systematic efforts to adapt diffusion for text emerged in
+this period. Zou et al. provided the first systematic survey of
+diffusion for non-autoregressive text generation, defining both discrete
+(mask-based) and continuous (Gaussian embedding) formulations <span
+class="citation" data-cites="zou2023survey"></span>.</p>
+<p>Key pioneering works include:</p>
+<p><strong>D3PM</strong> (Austin et al., 2021): This work proposed a
+diffusion-like generative model for discrete data, defining a family of
+discrete damage processes that generalize the diffusion framework beyond
+Gaussian noise <span class="citation"
+data-cites="austin2021d3pm"></span>. It demonstrated that
+absorbing-state discrete diffusion can produce coherent categorical
+samples without timestep inputs <span class="citation"
+data-cites="austin2021d3pm"></span>, establishing the technical
+foundation on which most modern dLLMs rest.</p>
+<p><strong>Diffusion-LM</strong> (Li et al., 2022): This work developed
+a non-autoregressive language model based on continuous diffusions,
+embedding Gaussian noise into token representations <span
+class="citation"
+data-cites="li2022diffusion tseng2025diffusion"></span>. Diffusion-LM
+demonstrated successful control for six challenging fine-grained control
+tasks—including syntactic structure, length, and lexical
+constraints—significantly outperforming prior plug-in methods in
+controllable text generation <span class="citation"
+data-cites="li2022diffusion"></span>.</p>
+<p><strong>DiffusionBERT</strong> (Wang et al., 2022): This work
+presented a generative masked language model based on discrete diffusion
+models, leveraging BERT as its backbone <span class="citation"
+data-cites="wang2023diffusionbert"></span>. By recognizing that
+diffusion models and pre-trained language models share a denoising
+objective, DiffusionBERT achieved significant improvements over existing
+diffusion models for text <span class="citation"
+data-cites="wang2023diffusionbert"></span>.</p>
+<p><strong>SSD-LM</strong> (Han et al., 2022): This work introduced a
+semi-autoregressive diffusion-based language model that iteratively
+generates blocks of text, allowing for flexible output length while
+enabling local bidirectional context updates within each block <span
+class="citation" data-cites="han2023ssdlm"></span>. Its block-wise
+design is architecturally significant: rather than treating parallelism
+and sequential structure as mutually exclusive, SSD-LM shows they can be
+combined. The work also demonstrated that with simplex projection, the
+diffusion process can be conducted directly in the natural vocabulary
+space <span class="citation" data-cites="han2023ssdlm"></span>.</p>
+<p><strong>CDCD</strong> (Dieleman et al., 2022): This framework modeled
+categorical data with diffusion processes that are continuous both in
+time and input space <span class="citation"
+data-cites="dieleman2022cdcd"></span>, demonstrating efficacy on several
+language modeling tasks and providing score interpolation techniques for
+improved likelihood estimation <span class="citation"
+data-cites="dieleman2022cdcd"></span>.</p>
+<h2 id="the-shift-to-discrete-diffusion-2023-2024">The Shift to Discrete
+Diffusion (2023-2024)</h2>
+<p>Continuous approaches faced a persistent difficulty: mapping
+continuous embeddings back to discrete tokens without quality
+degradation, since small perturbations in embedding space can decode to
+unrelated tokens. Recent analyses suggest this gap was driven at least
+as much by unexamined design choices in early continuous systems as by
+any fundamental property of discreteness <span class="citation"
+data-cites="shen2026codar"></span>, but empirically research shifted
+decisively toward discrete formulations during this period <span
+class="citation" data-cites="jin2025discreteness"></span>.</p>
+<p><strong>Masked Diffusion Language Models (MDLM)</strong> (Sahoo et
+al., 2024): This work introduced a masked discrete diffusion model
+featuring a novel substitution-based parameterization that simplifies
+the absorbing-state diffusion loss to a Rao–Blackwellized mixture of
+classical masked language modeling cross-entropies <span
+class="citation" data-cites="sahoo2024simple"></span>. MDLM demonstrated
+that masked diffusion could close much of the perplexity gap to AR
+models at small scales <span class="citation"
+data-cites="sahoo2024simple"></span>.</p>
+<p><strong>SEDD</strong> (Lou et al., 2023): Rather than parameterizing
+a vocabulary-sized transition matrix, SEDD estimates the ratios of the
+data distribution across noise scales with a score-entropy objective
+<span class="citation" data-cites="lou2023sedd"></span>. This
+ratio-based view is the direct ancestor of the score parameterizations
+used in subsequent scaled masked diffusion models, and SEDD showed
+competitive likelihoods against GPT-2 at its scale <span
+class="citation" data-cites="lou2023sedd"></span>.</p>
+<p><strong>GIDD</strong> (von Rütte et al., 2025): Generalized
+interpolating discrete diffusion unifies masked and uniform noising in a
+single forward-process family, including hybrid schedules with
+self-correction capability <span class="citation"
+data-cites="gulrajani2025gidd"></span>. In the reported small-model
+studies, mask-only models generally performed better on likelihood and
+downstream tasks; whether uniform components help token-constrained
+scaling remains an open hypothesis <span class="citation"
+data-cites="gulrajani2025gidd"></span>.</p>
+<h2 id="industrial-scale-diffusion-llms-2025-present">Industrial-Scale
+Diffusion LLMs (2025-Present)</h2>
+<p>The most recent phase has witnessed the scaling of diffusion language
+models to commercial scale, with performance rivaling or matching
+autoregressive counterparts <span class="citation"
+data-cites="yu2025discrete"></span>.</p>
+<p><strong>Mercury</strong> (Inception Labs, 2025): The first
+commercially available diffusion-based LLM, Mercury achieves throughputs
+of 1,109 tokens/sec (Mini) and 737 tokens/sec (Small) on NVIDIA H100
+GPUs—up to <span class="math inline">10×</span> faster than
+speed-optimized frontier models—while maintaining comparable quality on
+coding benchmarks <span class="citation"
+data-cites="khanna2025mercury"></span>. Mercury Coder Mini achieves an
+88% score on HumanEval and ranks second on Copilot Arena with just 25ms
+latency <span class="citation"
+data-cites="khanna2025mercury"></span>.</p>
+<p><strong>LLaDA</strong> (Nie et al., 2025): The first diffusion-based
+language model to achieve performance comparable to autoregressive
+models at the 8B scale, trained entirely from scratch with fully
+bidirectional attention <span class="citation"
+data-cites="nie2025large"></span>. LLaDA2.0 later scaled to 100B
+parameters, representing the first diffusion model at this scale <span
+class="citation" data-cites="nie2025large"></span>. Complementary
+scaling work adapted existing AR checkpoints to the diffusion objective:
+DiffuLLaMA reached 7B by adaptation <span class="citation"
+data-cites="gong2024diffullama"></span>, and the masked-diffusion MDM
+study reported a loss scaling rate similar to AR models while
+quantifying a roughly <span class="math inline">16×</span> compute gap
+at matched validation loss <span class="citation"
+data-cites="nie2024mdm"></span>. Earlier likelihood-based diffusion
+approaches faced a substantially larger (<span
+class="math inline">∼</span>64<span class="math inline">×</span>)
+matched-likelihood disadvantage <span class="citation"
+data-cites="gulrajani2023plaid"></span>, so these gaps reflect different
+objectives and estimators rather than a single constant penalty.
+Compute-optimal training studies further find diffusion-specific
+tradeoffs, including higher optimal data budgets than AR models in
+single-epoch regimes <span class="citation"
+data-cites="ni2025quokka"></span>.</p>
+<h2 id="diffusion-native-post-training-2025-present">Diffusion-Native
+Post-Training (2025-Present)</h2>
+<p>Adapting preference optimization and reinforcement learning to
+diffusion decoders has become its own research thread. SEPO applies
+policy gradients to discrete diffusion with self-normalized importance
+sampling and clipped ratios <span class="citation"
+data-cites="zekri2025sepo"></span>; d1 adapts GRPO to masked dLLMs
+through one-step unmasking with verifiable rewards <span
+class="citation" data-cites="zhao2025d1"></span>; VRPO reduces the
+variance of ELBO-based DPO estimators through Monte Carlo allocation and
+antithetic sampling, yielding LLaDA 1.5 <span class="citation"
+data-cites="zhu2025llada15"></span>; and coupled-GRPO uses complementary
+mask noise for paired completions in code models such as DiffuCoder
+<span class="citation" data-cites="gong2025diffucoder"></span>. Reported
+gains are promising but rest on limited data, task, and model
+coverage.</p>
+<h1 id="categorization-of-diffusion-language-models">Categorization of
+Diffusion Language Models</h1>
+<h2 id="by-diffusion-space">By Diffusion Space</h2>
+<p><strong>Continuous-Space Models:</strong> These models map discrete
+tokens to continuous embeddings and apply standard Gaussian diffusion
+<span class="citation" data-cites="shen2026codar"></span>. Examples
+include Diffusion-LM <span class="citation"
+data-cites="li2022diffusion"></span>, SSD-LM <span class="citation"
+data-cites="han2023ssdlm"></span>, and CDCD <span class="citation"
+data-cites="dieleman2022cdcd"></span>. While these models benefit from
+the well-understood mathematics of continuous diffusion, they face
+challenges in maintaining semantic consistency when projecting back to
+discrete tokens <span class="citation"
+data-cites="shen2026codar"></span>.</p>
+<p><strong>Discrete-Space Models:</strong> These models operate directly
+on token spaces using discrete noise processes such as absorbing-state
+(masking) or uniform transitions <span class="citation"
+data-cites="jin2025discreteness"></span>. Examples include D3PM <span
+class="citation" data-cites="austin2021d3pm"></span>, MDLM <span
+class="citation" data-cites="sahoo2024simple"></span>, DiffusionBERT
+<span class="citation" data-cites="wang2023diffusionbert"></span>,
+Mercury <span class="citation" data-cites="khanna2025mercury"></span>,
+and LLaDA <span class="citation" data-cites="nie2025large"></span>.
+Discrete models have largely superseded continuous approaches in recent
+work <span class="citation"
+data-cites="jin2025discreteness"></span>.</p>
+<h2 id="by-generation-strategy">By Generation Strategy</h2>
+<p><strong>Fully Parallel Models:</strong> These models generate all
+tokens simultaneously through iterative refinement. Examples include
+MDLM <span class="citation" data-cites="sahoo2024simple"></span> and
+LLaDA <span class="citation" data-cites="nie2025large"></span>.</p>
+<p><strong>Semi-Autoregressive Models:</strong> These models generate
+blocks of text iteratively, combining the parallelism of diffusion with
+the sequential structure of autoregression. SSD-LM exemplifies this
+approach <span class="citation" data-cites="han2023ssdlm"></span>.</p>
+<h2 id="by-architecture">By Architecture</h2>
+<p><strong>Transformer-Based:</strong> Most diffusion language models
+employ Transformer architectures, as the choice of architecture is
+orthogonal to the diffusion paradigm <span class="citation"
+data-cites="khanna2025mercury"></span>. Mercury, LLaDA, and
+DiffusionBERT all use Transformer backbones.</p>
+<p><strong>Hybrid Architectures:</strong> Some works explore combining
+diffusion with other paradigms, such as integrating LLMs with diffusion
+models for multimodal generation <span class="citation"
+data-cites="benjdira2025integrating"></span>.</p>
+<h1 id="applications-and-empirical-results">Applications and Empirical
+Results</h1>
+<h2 id="code-generation">Code Generation</h2>
+<p>Coding represents a particularly latency-sensitive domain where
+diffusion models have demonstrated exceptional value <span
+class="citation" data-cites="khanna2025mercury"></span>. Mercury Coder
+achieves:</p>
+<ul>
+<li><p><strong>HumanEval:</strong> 88% (Mini) and 90% (Small) pass@1
+<span class="citation" data-cites="khanna2025mercury"></span></p></li>
+<li><p><strong>MultiPL-E:</strong> Competitive performance across C++,
+Java, JavaScript, PHP, Bash, and TypeScript <span class="citation"
+data-cites="khanna2025mercury"></span></p></li>
+<li><p><strong>Fill-in-the-Middle:</strong> State-of-the-art performance
+of 93.1% (Small) on single-line FIM <span class="citation"
+data-cites="khanna2025mercury"></span></p></li>
+<li><p><strong>Speed:</strong> 1,109 tokens/sec (Mini) and 737
+tokens/sec (Small) on H100 GPUs <span class="citation"
+data-cites="khanna2025mercury"></span></p></li>
+</ul>
+<p>These results demonstrate that diffusion models can match or exceed
+AR models in code generation while achieving order-of-magnitude speed
+improvements. The throughput figures should be read in context: they are
+aggregate batch throughputs on H100 GPUs, and independent analyses
+attribute part of the speedup to the reduced number of denoising steps
+(Mercury uses a 10-step schedule) rather than to parallel decoding alone
+<span class="citation"
+data-cites="wang2025d2f fu2025efficientdlm"></span>.</p>
+<h2 id="controllable-text-generation">Controllable Text Generation</h2>
+<p>One of the earliest and most compelling applications of diffusion to
+language was controllable generation. Diffusion-LM demonstrated
+successful control across six fine-grained tasks, significantly
+outperforming prior work <span class="citation"
+data-cites="li2022diffusion"></span>. The bidirectional nature of
+diffusion enables constraints to be applied throughout the generation
+process rather than only left-to-right <span class="citation"
+data-cites="li2025surveydlm"></span>.</p>
+<h2 id="multimodal-generation">Multimodal Generation</h2>
+<p>The integration of LLMs and diffusion models has emerged as a key
+research frontier for advancing multimodal generation, reasoning, and
+cross-domain understanding <span class="citation"
+data-cites="benjdira2025integrating"></span>. This integration
+enables:</p>
+<ul>
+<li><p><strong>Text-to-Image Synthesis:</strong> Leveraging LLMs for
+semantic understanding and diffusion models for high-quality generation
+<span class="citation"
+data-cites="benjdira2025integrating"></span></p></li>
+<li><p><strong>Text-to-Video Synthesis:</strong> Extending diffusion to
+temporal domains with LLM guidance <span class="citation"
+data-cites="benjdira2025integrating"></span></p></li>
+<li><p><strong>Unified Multimodal Models:</strong> Combining
+understanding and generation capabilities in a single framework <span
+class="citation" data-cites="khanna2025mercury"></span></p></li>
+</ul>
+<h2 id="human-evaluation">Human Evaluation</h2>
+<p>Mercury Coder Mini, evaluated on Copilot Arena, ranks tied for second
+place in code completion quality, surpassing speed-optimized models like
+GPT-4o Mini and Gemini-1.5-Flash, and even larger models like GPT-4o
+<span class="citation" data-cites="khanna2025mercury"></span>. With an
+average latency of just 25ms, it is approximately <span
+class="math inline">4×</span> faster than GPT-4o Mini, which averages
+around 100ms in the same evaluation <span class="citation"
+data-cites="khanna2025mercury"></span>.</p>
+<h1 id="challenges-open-problems-vs.-future-directions">Challenges (Open
+Problems) vs. Future Directions</h1>
+<p>Because the remaining two analytical sections address related but
+distinct concerns, we state their partition explicitly: this section
+catalogs <em>unsolved problems with evidence</em>, while Section 7
+outlines <em>proposed research programs</em>. Each challenge below maps
+to one or more directions that follow.</p>
+<h2 id="challenges-and-open-problems">Challenges and Open Problems</h2>
+<h2 id="inference-efficiency">Inference Efficiency</h2>
+<p>While diffusion models offer theoretical parallelism, practical
+efficiency depends on the number of denoising steps. Early diffusion
+models required hundreds of steps; training-free acceleration techniques
+such as KV caching and parallel decoding (Fast-dLLM), as well as learned
+step-distillation samplers, have since reduced this to 10-20 steps with
+minimal quality loss <span class="citation"
+data-cites="wu2025fastdllm fu2025efficientdlm"></span>. The trade-off
+between generation quality and inference speed remains an active area of
+research <span class="citation"
+data-cites="li2025surveydlm"></span>.</p>
+<h2 id="long-sequence-handling">Long-Sequence Handling</h2>
+<p>Diffusion models face challenges in handling long sequences due to
+the computational cost of processing entire sequences in each denoising
+step <span class="citation" data-cites="li2025surveydlm"></span>.
+Context windows currently range from 32K (Mercury) <span
+class="citation" data-cites="khanna2025mercury"></span> to 128K with
+positional-extension techniques such as RoPE scaling, compared to 1M+
+for some AR models.</p>
+<h2 id="scaling-laws">Scaling Laws</h2>
+<p>The scaling properties of diffusion language models are less well
+understood than those of autoregressive models <span class="citation"
+data-cites="khanna2025mercury"></span>. While larger diffusion models
+consistently outperform smaller ones, the relationship between model
+size, data, and performance requires further investigation <span
+class="citation" data-cites="yu2025discrete"></span>.</p>
+<h2 id="alignment-and-fine-tuning">Alignment and Fine-Tuning</h2>
+<p>Adapting diffusion models to follow instructions through RLHF or DPO
+presents unique challenges, as the denoising objective differs
+fundamentally from the autoregressive next-token prediction loss <span
+class="citation" data-cites="khanna2025mercury"></span>. Techniques
+developed for AR models may not transfer directly.</p>
+<h2 id="evaluation-protocols">Evaluation Protocols</h2>
+<p>Standardized benchmarks and evaluation protocols for diffusion
+language models remain underdeveloped <span class="citation"
+data-cites="tseng2025diffusion"></span>. Many existing benchmarks were
+designed for AR models and may not capture the unique strengths and
+weaknesses of diffusion-based generation <span class="citation"
+data-cites="yu2025discrete"></span>.</p>
+<h1 id="future-directions">Future Directions</h1>
+<h2 id="unified-autoregressive-diffusion-models">Unified
+Autoregressive-Diffusion Models</h2>
+<p>Recent work has explored unifying AR and diffusion paradigms through
+hyperschedules and hybrid architectures <span class="citation"
+data-cites="tseng2025diffusion"></span>. Such unification could enable
+models to leverage the strengths of both approaches: the deep reasoning
+of AR and the speed and controllability of diffusion. This direction
+directly addresses the scaling-law and alignment challenges of Section
+6, since hybrid schedules can retain AR-style likelihood training while
+inheriting diffusion-style parallel decoding.</p>
+<h2 id="efficient-inference-techniques">Efficient Inference
+Techniques</h2>
+<p>Advances in caching mechanisms <span class="citation"
+data-cites="wu2025fastdllm"></span>, adaptive correction sampling <span
+class="citation" data-cites="tseng2025diffusion"></span>, and decoding
+parallelism <span class="citation" data-cites="li2025surveydlm"></span>
+promise to further reduce inference latency. The development of
+specialized hardware and inference engines for diffusion models
+represents another important direction <span class="citation"
+data-cites="khanna2025mercury"></span>.</p>
+<h2 id="scaling-to-frontier-performance">Scaling to Frontier
+Performance</h2>
+<p>While diffusion models have demonstrated comparable performance to
+speed-optimized AR models, matching frontier models (e.g., GPT-4o,
+Claude 3.5 Sonnet) on complex reasoning benchmarks remains an open
+challenge <span class="citation" data-cites="khanna2025mercury"></span>.
+Scaling diffusion models to hundreds of billions of parameters, as
+demonstrated by LLaDA2.0 <span class="citation"
+data-cites="nie2025large"></span>, may help close this gap.</p>
+<h2 id="agentic-applications">Agentic Applications</h2>
+<p>The speed advantages of diffusion models make them particularly
+attractive for agentic workloads requiring multiple reasoning and
+execution cycles <span class="citation"
+data-cites="khanna2025mercury"></span>. However, memory and context
+limitations must be addressed for complex, multi-step agentic tasks.</p>
+<h2 id="multimodal-unification">Multimodal Unification</h2>
+<p>The integration of diffusion models and LLMs for unified multimodal
+understanding and generation represents a promising frontier <span
+class="citation"
+data-cites="benjdira2025integrating khanna2025mercury"></span>. Such
+unified models could serve as the foundation for next-generation AI
+systems capable of seamless interaction across modalities.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>Diffusion models for large language models have evolved from
+small-scale experiments to commercial-scale deployments in just a few
+years. The shift from continuous to discrete formulations—driven by the
+token-projection difficulties of embedding-space approaches, though
+recent evidence suggests the gap was narrower than commonly assumed
+<span class="citation" data-cites="shen2026codar"></span>—coupled with
+advances in training and inference efficiency, has enabled
+diffusion-based LLMs to achieve performance comparable to autoregressive
+models while delivering order-of-magnitude speed improvements under
+batch decoding <span class="citation"
+data-cites="yu2025discrete wang2025d2f"></span>.</p>
+<p>Key milestones include the pioneering Diffusion-LM <span
+class="citation" data-cites="li2022diffusion"></span>, the discrete
+diffusion frameworks of D3PM <span class="citation"
+data-cites="austin2021d3pm"></span> and MDLM <span class="citation"
+data-cites="sahoo2024simple"></span>, the industrial-scale deployment of
+Mercury <span class="citation" data-cites="khanna2025mercury"></span>,
+and the 100B-scale LLaDA2.0 <span class="citation"
+data-cites="nie2025large"></span>. These developments position diffusion
+models as a compelling alternative—and complement—to the dominant
+autoregressive paradigm <span class="citation"
+data-cites="yu2025discrete"></span>.</p>
+<p>However, significant challenges remain, including inference
+efficiency optimization, long-sequence handling, scaling law
+characterization, alignment techniques, and standardized evaluation
+protocols <span class="citation"
+data-cites="tseng2025diffusion li2025surveydlm"></span>. Addressing
+these challenges will be essential for realizing the full potential of
+diffusion-based language models in real-world applications.</p>
+<p>The future of language modeling likely lies not in a single paradigm
+but in hybrid approaches that leverage the complementary strengths of
+autoregressive and diffusion models <span class="citation"
+data-cites="benjdira2025integrating"></span>—combining the deep
+reasoning of AR with the speed, parallelism, and controllability of
+diffusion.</p>
+<div class="thebibliography">
+<p><span>99</span></p>
+<p>J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic
+models,” <em>Advances in Neural Information Processing Systems</em>,
+vol. 33, pp. 6840–6851, 2020.</p>
+<p>X. L. Li, J. Thickstun, I. Gulrajani, P. Liang, and T. B. Hashimoto,
+“Diffusion-LM improves controllable text generation,” <em>arXiv preprint
+arXiv:2205.14217</em>, 2022.</p>
+<p>C.-Y. Tseng, D. Zhang, Z. Bi, and J. Song, “Diffusion-based large
+language models survey,” <em>TechRxiv</em>, 2025.</p>
+<p>R. Yu, Q. Li, and X. Wang, “Discrete diffusion in large language and
+multimodal models: A survey,” <em>arXiv preprint arXiv:2506.13759</em>,
+2025.</p>
+<p>T. Li, M. Chen, B. Guo, and Z. Shen, “A survey on diffusion language
+models,” <em>arXiv preprint arXiv:2508.10875</em>, 2025.</p>
+<p>A. Benjdira and A. M. Ali, “Integrating large language models and
+diffusion models in generative AI tasks: Progress, challenges, and
+future directions,” <em>TechRxiv</em>, 2025.</p>
+<p>H. Zou, Z. M. Kim, and D. Kang, “A survey of diffusion models in
+natural language processing,” <em>arXiv preprint arXiv:2305.14671</em>,
+2023.</p>
+<p>S. Sahoo et al., “Simple and effective masked diffusion language
+models,” <em>NeurIPS</em>, 2024.</p>
+<p>K. Wang et al., “DiffusionBERT: Improving generative masked language
+models with diffusion models,” <em>ACL</em>, 2023.</p>
+<p>X. Han et al., “SSD-LM: Semi-autoregressive simplex-based diffusion
+language model for text generation and modular control,” <em>ACL</em>,
+2023.</p>
+<p>S. Dieleman et al., “Continuous diffusion for categorical data,”
+<em>arXiv preprint</em>, 2022.</p>
+<p>Y. Nie et al., “Large language diffusion models (LLaDA),”
+<em>NeurIPS</em>, 2025.</p>
+<p>S. Khanna et al., “Mercury: Ultra-fast language models based on
+diffusion,” <em>Inception Labs Technical Report</em>, 2025.</p>
+<p>J. Song, C. Meng, and S. Ermon, “Denoising diffusion implicit
+models,” <em>arXiv preprint arXiv:2010.02502</em>, 2021.</p>
+<p>J. Austin, D. D. Johnson, J. Ho, D. Tarlow, and R. van den Berg,
+“Structured denoising diffusion models in discrete state-spaces,”
+<em>arXiv preprint arXiv:2107.03006</em>, 2021.</p>
+<p>Y. Song, J. Sohl-Dickstein, D. P. Kingma, A. Kumar, S. Ermon, and B.
+Poole, “Score-based generative modeling through stochastic differential
+equations,” <em>arXiv preprint arXiv:2011.13456</em>, 2021.</p>
+<p>E. Hoogeboom, D. Nielsen, P. Jaini, P. Forré, and M. Welling, “Argmax
+flows and multinomial diffusion: Learning categorical distributions,”
+<em>arXiv preprint arXiv:2102.05379</em>, 2021.</p>
+<p>J. Shen, J. Zhao, Z. He, and Z. Lin, “CoDAR: Continuous diffusion
+language models are more powerful than you think,” <em>arXiv preprint
+arXiv:2603.02547</em>, 2026.</p>
+<p>Z. Jin, B. Wang, X. Lin, L. Bing, and A. Sun, “On the role of
+discreteness in diffusion LLMs,” <em>arXiv preprint
+arXiv:2512.22630</em>, 2025.</p>
+<p>X. Wang, C. Xu, Y. Jin, J. Jin, H. Zhang, and Z. Deng, “Diffusion
+LLMs can do faster-than-AR inference via discrete diffusion forcing,”
+<em>arXiv preprint arXiv:2508.09192</em>, 2025.</p>
+<p>Y. Fu, L. Whalen, Z. Ye, X. Dong, S. Diao, and J. Liu,
+“Efficient-DLM: From autoregressive to diffusion language models, and
+beyond in speed,” <em>arXiv preprint arXiv:2512.14067</em>, 2025.</p>
+<p>C. Wu, H. Zhang, and S. Xue, “Fast-dLLM: Training-free acceleration
+of diffusion LLM by enabling KV cache and parallel decoding,” <em>arXiv
+preprint arXiv:2505.22618</em>, 2025.</p>
+<p>A. Campbell, J. Benton, V. De Bortoli, T. Rainforth, G.
+Deligiannidis, and A. Doucet, “A continuous time framework for discrete
+denoising models,” <em>arXiv preprint arXiv:2205.14987</em>, 2022.</p>
+<p>H. Sun, L. Yu, B. Dai, D. Schuurmans, and H. Dai, “Score-based
+continuous-time discrete diffusion models,” <em>arXiv preprint
+arXiv:2211.16750</em>, 2022.</p>
+<p>A. Lou, C. Meng, and S. Ermon, “Discrete diffusion modeling by
+estimating the ratios of the data distribution,” <em>arXiv preprint
+arXiv:2310.16834</em>, 2023.</p>
+<p>D. von Rütte, J. Fluri, Y. Ding, A. Orvieto, B. Schölkopf, and T.
+Hofmann, “Generalized interpolating discrete diffusion,” <em>arXiv
+preprint arXiv:2503.04482</em>, 2025.</p>
+<p>I. Gulrajani and T. B. Hashimoto, “Likelihood-based diffusion
+language models,” <em>arXiv preprint arXiv:2305.18619</em>, 2023.</p>
+<p>S. Nie, F. Zhu, Z. Gao, D. Du, T. Pang, Q. Liu, C. Li, and M. Lin,
+“Scaling up masked diffusion models on text,” <em>arXiv preprint
+arXiv:2410.18514</em>, 2024.</p>
+<p>S. Gong, S. Agarwal, Y. Zhang, J. Ye, L. Zheng, M. Li, C. An, P.
+Zhao, and T. Pfister, “Scaling diffusion language models via adaptation
+from autoregressive models,” <em>arXiv preprint arXiv:2410.17891</em>,
+2024.</p>
+<p>J. Ni, Q. Liu, C. Du, L. Dou, H. Yan, Z. Wang, and W. Lu, “Training
+optimal large diffusion language models,” <em>arXiv preprint
+arXiv:2510.03280</em>, 2025.</p>
+<p>O. Zekri and N. Boullé, “Fine-tuning discrete diffusion models with
+policy gradient methods,” <em>arXiv preprint arXiv:2502.01384</em>,
+2025.</p>
+<p>S. Zhao, D. Gupta, Q. Zheng, and A. Grover, “d1: Scaling reasoning in
+diffusion large language models via reinforcement learning,” <em>arXiv
+preprint arXiv:2504.12216</em>, 2025.</p>
+<p>F. Zhu, R. Wang, S. Nie, X. Zhang, C. Wu, J. Chen, Y. Liu, and M.
+Lin, “LLaDA 1.5: Variance-reduced preference optimization for large
+language diffusion models,” <em>arXiv preprint arXiv:2505.19223</em>,
+2025.</p>
+<p>S. Gong, R. Zhang, H. Zheng, J. Gu, N. Jaitly, L. Kong, and Y. Li,
+“DiffuCoder: Understanding and improving masked diffusion models for
+code generation,” <em>arXiv preprint arXiv:2506.20639</em>, 2025.</p>
+</div>
+</body>
+</html>

@@ -7,6 +7,7 @@
   },
   "areas": [
     {"id": "ecology-evolution", "name": "Ecology & Evolution", "status": "active"},
+    {"id": "computer-science", "name": "Computer Science", "status": "active"},
     {"id": "physics", "name": "Physics", "status": "coming-soon"}
   ],
   "reviews": [
@@ -59,6 +60,16 @@
       "date": "2026-08-25",
       "ai_model": "AI-generated review (placeholder entry)",
       "keywords": ["phylogenetic imputation", "trait evolution", "comparative methods", "missing data"]
+    },
+    {
+      "id": "2608.00006",
+      "title": "Diffusion Models for Large Language Models: A Survey of Discrete Diffusion LLMs",
+      "authors": ["LitReview AI", "A. L. Robles Fernández"],
+      "area": "computer-science",
+      "abstract": "Diffusion models now rival autoregressive models in continuous domains such as image, video, and audio synthesis, and have recently been extended to discrete data—most notably language—giving rise to diffusion language models, which the literature refers to interchangeably as Diffusion LLMs (DLLMs) and discrete diffusion language models (dLLMs). Unlike the dominant autoregressive (AR) paradigm, which generates tokens sequentially in a left-to-right fashion, diffusion-based language models generate text through an iterative denoising process that operates on entire sequences in parallel. This survey traces their evolution from continuous-space foundations to discrete formulations, categorizes representative models and techniques by diffusion space, generation strategy, and architecture, and examines applications, challenges, and future directions. We organize the field around the design choices that govern its quality–latency trade-off: the noise formulation, the generation strategy, and the post-training recipe.",
+      "date": "2026-08-25",
+      "ai_model": "AI-generated review",
+      "keywords": ["diffusion models", "large language models", "discrete diffusion", "text generation"]
     }
   ]
 }
