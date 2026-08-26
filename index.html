@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LitReview — AI-Generated Literature Reviews for the Basic Sciences</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An open repository of AI-generated literature reviews for the basic sciences, starting with Ecology & Evolution.">
+<link href="https://cdn.tailwindcss.com" rel="stylesheet">
+<style>
+:root{--primary:hsl(160,70%,40%);--accent:hsl(200,70%,50%)}
+html.dark{--primary:hsl(160,60%,45%)}
+body{transition:background .3s,color .3s}
+.card-hover{transition:border-color .2s, transform .2s}
+.card-hover:hover{border-color:var(--primary);transform:translateY(-2px)}
+</style>
+<script>
+function applyTheme(){const d=localStorage.theme==='dark'||(!('theme'in localStorage)&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}
+applyTheme();
+function toggleTheme(){document.documentElement.classList.toggle('dark');localStorage.theme=document.documentElement.classList.contains('dark')?'dark':'light';}
+</script>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-[#0a0a0a] dark:text-gray-100 min-h-screen flex flex-col">
+
+<nav class="flex justify-between items-center px-8 py-4 bg-white dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800">
+  <a href="/" class="font-bold text-xl"><span style="color:var(--primary)">Lit</span>Review</a>
+  <div class="flex gap-6 items-center text-sm">
+    <a href="/browse.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">Browse</a>
+    <a href="/about.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">About</a>
+    <button onclick="toggleTheme()" class="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:scale-110 transition-transform" title="Toggle theme">🌓</button>
+  </div>
+</nav>
+
+<header class="px-8 py-20 text-center bg-gradient-to-b from-emerald-50 dark:from-transparent to-transparent">
+  <p class="uppercase tracking-widest text-xs font-semibold mb-3" style="color:var(--primary)">ai.litreview.org</p>
+  <h1 class="text-4xl md:text-5xl font-bold max-w-3xl mx-auto leading-tight">Literature reviews written by AI,<br>organized like arXiv</h1>
+  <p class="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">An open repository of AI-generated literature reviews for the basic sciences — starting with Ecology &amp; Evolution.</p>
+  <div class="mt-8 flex gap-4 justify-center">
+    <a href="/browse.html" class="px-6 py-3 rounded-lg font-semibold text-white bg-emerald-600 hover:bg-emerald-700">Browse reviews</a>
+    <a href="/about.html" class="px-6 py-3 rounded-lg font-semibold border border-gray-300 dark:border-gray-700 hover:border-emerald-600">Learn more</a>
+  </div>
+</header>
+
+<main class="flex-1 w-full max-w-5xl mx-auto px-8 pb-16">
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold">Recent submissions</h2>
+      <a href="/browse.html" class="text-sm hover:underline" style="color:var(--primary)">View all →</a>
+    </div>
+    <div id="recent-listings" class="space-y-4"></div>
+  </section>
+
+  <section class="mt-16 grid md:grid-cols-3 gap-6">
+    <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414]">
+      <div class="text-2xl mb-2">🤖</div>
+      <h3 class="font-bold mb-2">AI-generated</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Reviews are synthesized by large language models from primary literature, then curated before publication.</p>
+    </div>
+    <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414]">
+      <div class="text-2xl mb-2">📄</div>
+      <h3 class="font-bold mb-2">Open formats</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Every review ships as LaTeX source, PDF, and HTML — free to read, download, and reuse.</p>
+    </div>
+    <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414]">
+      <div class="text-2xl mb-2">🔬</div>
+      <h3 class="font-bold mb-2">Organized by area</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Starting with Ecology &amp; Evolution. Physics and other basic sciences coming soon.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="px-8 py-8 text-center text-sm text-gray-500 border-t border-gray-200 dark:border-gray-800">
+  <a href="https://github.com/alrobles/litreview.org" class="hover:underline mx-2" target="_blank">GitHub</a>·
+  <span class="mx-2">Ecology & Evolution</span>·
+  <span class="mx-2">Physics (soon)</span><br><br>
+  LitReview © 2026 · AI-generated content is provided with curation but without warranty
+</footer>
+
+<script>
+fetch('/data/reviews.json').then(r=>r.json()).then(data=>{
+  const list=document.getElementById('recent-listings');
+  data.reviews.slice(0,3).forEach(r=>{
+    const a=document.createElement('a');
+    a.href=`/abs.html?id=${r.id}`;
+    a.className='block p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] card-hover';
+    a.innerHTML=`
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <div class="text-xs text-gray-400 font-mono mb-1">${r.id} <span class="ml-2 not-italic">[${r.date}]</span></div>
+          <div class="font-semibold text-lg">${r.title}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${r.authors.join(', ')}</div>
+        </div>
+        <span class="shrink-0 text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Ecology &amp; Evolution</span>
+      </div>`;
+    list.appendChild(a);
+  });
+});
+</script>
+</body>
+</html>

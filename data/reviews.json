@@ -1,0 +1,64 @@
+{
+  "site": {
+    "name": "LitReview",
+    "domain": "ai.litreview.org",
+    "description": "AI-generated literature reviews for the basic sciences",
+    "contact": "a.l.robles.fernandez@gmail.com"
+  },
+  "areas": [
+    {"id": "ecology-evolution", "name": "Ecology & Evolution", "status": "active"},
+    {"id": "physics", "name": "Physics", "status": "coming-soon"}
+  ],
+  "reviews": [
+    {
+      "id": "2608.00001",
+      "title": "Species Distribution Models in the Era of Deep Learning: A Synthesis",
+      "authors": ["LitReview AI", "A. L. Robles Fernández"],
+      "area": "ecology-evolution",
+      "abstract": "Species distribution models (SDMs) have evolved from correlative envelope methods to deep learning architectures capable of exploiting massive biodiversity data streams. This review synthesizes progress across four axes: (1) the transition from GLM/GAM-based approaches to neural and ensemble methods, including convolutional and transformer architectures applied to remote sensing covariates; (2) the integration of process-based mechanistic models with data-driven predictions; (3) uncertainty quantification and transferability under climate change scenarios; and (4) emerging evaluation standards for model comparison. We identify key open challenges, including sampling bias correction at continental scales, temporal validity of static models, and the need for interpretable predictions to inform conservation policy.",
+      "date": "2026-08-25",
+      "ai_model": "AI-generated review (placeholder entry)",
+      "keywords": ["species distribution models", "deep learning", "bioclimatic variables", "ecological niche"]
+    },
+    {
+      "id": "2608.00002",
+      "title": "Environmental DNA for Biodiversity Monitoring: Promises, Pitfalls, and Statistical Frontiers",
+      "authors": ["LitReview AI", "A. L. Robles Fernández"],
+      "area": "ecology-evolution",
+      "abstract": "Environmental DNA (eDNA) metabarcoding has transformed biodiversity monitoring by enabling species detection from water, soil, and air samples. This review synthesizes the state of the field across methodological and statistical dimensions. We examine laboratory protocols and contamination controls, bioinformatic pipelines for sequence assignment, and occupancy-style hierarchical models that translate detection counts into abundance estimates. We highlight persistent challenges: imperfect and heterogeneous detection, reference database gaps, quantitative interpretation of read counts, and spatial autocorrelation in study designs. Emerging directions include multi-trophic monitoring, eDNA time series for population trend estimation, and integration with autonomous sampling platforms.",
+      "date": "2026-08-25",
+      "ai_model": "AI-generated review (placeholder entry)",
+      "keywords": ["environmental DNA", "metabarcoding", "biodiversity monitoring", "occupancy models"]
+    },
+    {
+      "id": "2608.00003",
+      "title": "Temporal Connectivity in Landscape Genetics: From Static Graphs to Time-Series Genomics",
+      "authors": ["LitReview AI", "A. L. Robles Fernández"],
+      "area": "ecology-evolution",
+      "abstract": "Landscape genetics has traditionally treated connectivity as a static property inferred from a single snapshot of genetic variation. Temporal genomic datasets — historical specimens, resampled populations, and time-series of allele frequencies — now allow connectivity itself to be estimated as a dynamic process. This review synthesizes methods linking landscape resistance surfaces to temporal genetic differentiation, including time-series F_ST approaches, effective migration surface models fit across decades, and simulation-based inference for resistance parameterization. We discuss how temporal designs disentangle demographic change from landscape change, quantify lag effects in habitat-loss responses, and forecast gene flow under future land-use scenarios.",
+      "date": "2026-08-25",
+      "ai_model": "AI-generated review (placeholder entry)",
+      "keywords": ["landscape genetics", "gene flow", "temporal genomics", "connectivity"]
+    },
+    {
+      "id": "2608.00004",
+      "title": "Macroecological Patterns of Thermal Tolerance: A Quantitative Synthesis",
+      "authors": ["LitReview AI", "A. L. Robles Fernández"],
+      "area": "ecology-evolution",
+      "abstract": "Thermal tolerance traits underpin predictions of species vulnerability to climate warming, yet macroecological generalizations remain contested. This review quantitatively synthesizes reported patterns in thermal limits across latitude, body size, and clades. We evaluate evidence for climate variability hypotheses explaining latitudinal gradients in thermal breadth, assess phylogenetic signal in tolerance traits, and examine mismatches between critical limits measured in the laboratory and temperatures experienced in microhabitats. We conclude that trait-based forecasts improve substantially when acclimation capacity, behavioral thermoregulation, and ontogenetic variation are modeled explicitly, and we outline minimum reporting standards for comparative thermal datasets.",
+      "date": "2026-08-25",
+      "ai_model": "AI-generated review (placeholder entry)",
+      "keywords": ["thermal tolerance", "macroecology", "climate change", "latitudinal gradients"]
+    },
+    {
+      "id": "2608.00005",
+      "title": "Phylogenetic Imputation of Trait Data: Methods, Benchmarks, and Best Practices",
+      "authors": ["LitReview AI", "A. L. Robles Fernández"],
+      "area": "ecology-evolution",
+      "abstract": "Missing trait values are a pervasive obstacle in comparative biology and macroecology, motivating a rich literature on phylogenetic imputation. This review benchmarks the principal families of methods: Bayesian phylogenetic mixed models, multivariate regression trees, missForest with phylogenetic predictors, and Rphylopars-style variance-covariance approaches. Using published simulation criteria — error magnitude, bias, coverage of credible intervals, and sensitivity to phylogenetic uncertainty — we compare performance across trait types (continuous vs. categorical), missingness regimes, and tree sizes. We distill practical guidance: report imputation uncertainty in downstream analyses, prefer multivariate over univariate imputation when correlated traits exist, and validate on held-out taxa rather than random entries.",
+      "date": "2026-08-25",
+      "ai_model": "AI-generated review (placeholder entry)",
+      "keywords": ["phylogenetic imputation", "trait evolution", "comparative methods", "missing data"]
+    }
+  ]
+}

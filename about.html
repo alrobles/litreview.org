@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>About — LitReview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.tailwindcss.com" rel="stylesheet">
+<script>
+function applyTheme(){const d=localStorage.theme==='dark'||(!('theme'in localStorage)&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}
+applyTheme();
+function toggleTheme(){document.documentElement.classList.toggle('dark');localStorage.theme=document.documentElement.classList.contains('dark')?'dark':'light';}
+</script>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-[#0a0a0a] dark:text-gray-100 min-h-screen flex flex-col">
+
+<nav class="flex justify-between items-center px-8 py-4 bg-white dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800">
+  <a href="/" class="font-bold text-xl"><span style="color:var(--primary)">Lit</span>Review</a>
+  <div class="flex gap-6 items-center text-sm">
+    <a href="/browse.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">Browse</a>
+    <a href="/about.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white font-semibold">About</a>
+    <button onclick="toggleTheme()" class="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:scale-110 transition-transform">🌓</button>
+  </div>
+</nav>
+
+<main class="flex-1 w-full max-w-3xl mx-auto px-8 py-12 space-y-10 leading-relaxed">
+
+  <section>
+    <h1 class="text-3xl font-bold mb-4">About LitReview</h1>
+    <p>LitReview is an open repository of <strong>literature reviews generated with artificial intelligence</strong>, serving the basic sciences. Think of it as arXiv for AI-written syntheses: every review has an identifier, an abstract page, and is available as LaTeX source, PDF, and HTML.</p>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-bold mb-2">Why</h2>
+    <p>Keeping up with primary literature is increasingly impossible for individual researchers. Carefully prompted language models can scan large corpora and draft structured syntheses that a domain expert then curates. LitReview publishes those syntheses openly so that anyone — students, researchers, practitioners — can get a rapid, honest overview of a field's state.</p>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-bold mb-2">How reviews are made</h2>
+    <ol class="list-decimal ml-6 space-y-1">
+      <li>A topic within a scientific area is selected.</li>
+      <li>An AI model surveys the literature and drafts the review.</li>
+      <li>The draft undergoes human curation before publication.</li>
+      <li>Reviews are versioned: identifiers follow the arXiv convention <code>YYMM.NNNNN</code>.</li>
+    </ol>
+    <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">AI-generated content can contain errors or fabricated citations. Always verify citations against the primary literature.</p>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-bold mb-2">Areas</h2>
+    <ul class="list-disc ml-6 space-y-1">
+      <li><strong>Ecology &amp; Evolution</strong> — active</li>
+      <li><strong>Physics</strong> — coming soon</li>
+      <li>Further basic sciences are planned.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-bold mb-2">Open by design</h2>
+    <p>All reviews are free to read and download. The site itself is open source at
+    <a href="https://github.com/alrobles/litreview.org" class="underline" target="_blank">github.com/alrobles/litreview.org</a>.</p>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-bold mb-2">Contact</h2>
+    <p>A. L. Robles Fernández · Kansas Biological Survey, University of Kansas<br>
+    <a href="mailto:a.l.robles.fernandez@gmail.com" class="underline">a.l.robles.fernandez@gmail.com</a></p>
+  </section>
+</main>
+
+<footer class="px-8 py-8 text-center text-sm text-gray-500 border-t border-gray-200 dark:border-gray-800">
+  LitReview © 2026 · AI-generated content is provided with curation but without warranty
+</footer>
+</body>
+</html>
