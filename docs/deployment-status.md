@@ -1,37 +1,59 @@
-# litreview.org — Estado del despliegue (2026-09-04)
+# LitReview.org — Deployment Status
 
-## ✅ LIVE — sitio publicado
+## 2026-09-04 — v2: scientist-written, AI-assisted reviews LIVE
 
-- **ai.litreview.org** → HTTP 200 (TLS OK), sirviendo desde el tunnel reumanlab-agentic
-- **litreview.org** (apex) → HTTP 200 (TLS OK)
-- Verificado: `/` (título correcto, carga reviews.json), `/data/reviews.json`
-  (6 reviews, 3 áreas), `/papers/2608.00006/main.pdf` (186 KB, 200)
+**Status: LIVE** — https://litreview.org and https://ai.litreview.org (HTTP 200, TLS OK)
 
-## Cronología
+### What changed (v2 refactor)
 
-- **2026-08-26**: sitio construido + Docker (`litreview-site`, 127.0.0.1:8670) +
-  ingress del tunnel añadido. BLOQUEO: sin token DNS para la zona litreview.org.
-- **2026-09-04**: Angel creó `~/env/litreview-dns-token` (DNS Edit, zona litreview.org).
-  1. Verificado token (`/user/tokens/verify` → active) y zona visible
-     (id=e9cd32ad76419bc1dc207037a59ac7ca).
-  2. Creados 2 CNAME → `154c1f8f-ad87-4dbe-b949-cf8a067dd4f9.cfargotunnel.com`,
-     proxied, ttl=1:
-     - `ai.litreview.org` (id=c6459cf170a8315e3bcfff3690ace5ba)
-     - `litreview.org` apex (id=d31da3c3722caf9fc2db8eab38a3e95a)
-  3. Ingress ya estaba en `/etc/cloudflared/config.yml` (líneas 29-32) y el
-     servicio systemd `cloudflared.service` lo servía desde el 25-ago — sin
-     restart necesario.
-  4. TLS provisionado en minutos. dig → 104.21.77.85 / 172.67.205.191.
+The site pivoted from auto-generated reviews to **reviews written by
+scientists with AI assistance**: authors write the reviews (AI as a drafting,
+synthesis, and fact-checking aid), submit them through a public form, and a
+moderator approves them before publication. No AI placeholder content is
+served.
 
-## Datos clave
+- **Backend**: FastAPI (`app/main.py`) — public `POST /api/v1/submit`, admin
+  queue (`GET /api/v1/admin/submissions`, `GET .../content/{sid}`, `POST
+  .../approve/{sid}`, `POST .../reject/{sid}`), rate limit 5/h/IP, pydantic
+  validation (content >= 100 chars, abstract >= 20, active areas only).
+- **Moderation**: `/admin.html` is served by the API and gated with
+  `X-Admin-Token` (env `LITREVIEW_ADMIN_TOKEN`, file
+  `~/env/litreview-admin-token`). Admin API rejects unauthenticated/bad-token
+  requests with 401.
+- **Data model** (`data/reviews.json`): entries now carry `status`
+  (published|hidden), `reviewed_by {name,email}`, `version`; legacy AI
+  placeholders (2608.00001–00005) were hidden and their `papers/` dirs
+  removed. Only the real human review 2608.00006 is published.
+- **Frontend**: self-hosted CSS (`static/css/style.css`) + JS — Tailwind CDN
+  removed. `submit.html` (public form, live Markdown preview, no JS deps),
+  `admin.html` (queue), pages rewritten to the "scientist-written,
+  AI-assisted" pitch.
+- **Deployment**: single container `litreview-site` (nginx + uvicorn,
+  image `litreview-site:v2`); repo is bind-mounted read-write at
+  `/srv/litreview`, so approvals write straight into the working tree (commit +
+  push keeps GitHub in sync). Port unchanged: 127.0.0.1:8670.
 
-- Tunnel: reumanlab-agentic = `154c1f8f-ad87-4dbe-b949-cf8a067dd4f9`
-- Zona litreview.org ID: `e9cd32ad76419bc1dc207037a59ac7ca`
-- Token DNS: `~/env/litreview-dns-token` (solo DNS Edit litreview.org)
-- Puerto local: 8670 (contenedor `litreview-site`, --restart unless-stopped)
+### Verified (2026-09-04)
 
-## Nota
+- E2E: submit → pending → approve → assigned id 2609.00001 → rendered
+  `papers/<id>/index.html` + `main.md` → visible in public reviews.json.
+  Test artifacts then removed (site shows only real content).
+- Security: admin endpoints return 401 without/with bad token; malformed
+  payloads return 422; 6th submission in an hour returns 429.
+- Missing static paths return 404 (nginx `try_files ... =404`).
+- All routes 200: `/`, `/submit.html`, `/browse.html`, `/about.html`,
+  `/admin.html`, `/static/css/style.css`, `/data/reviews.json`,
+  `/papers/2608.00006/index.html`.
 
-El quick tunnel efímero (`cloudflared-tunnel.sh`, `--url localhost:18789`) es
-otro servicio destinado a Devin (ephemeral URL en `~/.cloudflared_url`) y NO
-interfiere con el tunnel nombrado del systemd.
+### DNS / tunnel
+
+- Cloudflare zone litreview.org (e9cd32ad76419bc1dc207037a59ac7ca)
+- CNAME litreview.org + ai.litreview.org → tunnel
+  154c1f8f-ad87-4dbe-b949-cf8a067dd4f9.cfargotunnel.com (proxied)
+- cloudflared.service (systemd) routes both → 127.0.0.1:8670
+
+### Rollback
+
+Previous image with static nginx-only v1 is superseded; rebuild v2 from the
+repo (`docker build -t litreview-site:v2 .`) at any time. DNS/ingress
+unchanged from v1.

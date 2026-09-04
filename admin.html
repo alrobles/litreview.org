@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moderation — LitReview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand"><span>Lit</span>Review</a>
+  <div class="nav-links">
+    <a href="/browse.html">Browse</a>
+    <a href="/submit.html">Submit</a>
+    <a href="/about.html">About</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="admin-bar">
+    <h1 class="page-title" style="margin:0">Moderation queue</h1>
+    <div style="display:flex; gap:.75rem; align-items:center">
+      <input type="password" id="token" class="token-input" placeholder="Admin token" autocomplete="off">
+      <button class="btn btn-primary btn-sm" onclick="loadSubs()">Load</button>
+    </div>
+  </div>
+  <p class="count-line" id="count"></p>
+  <div id="queue"><p class="empty">Enter the admin token and press Load.</p></div>
+</main>
+
+<footer class="footer">
+  LitReview © 2026 · Moderation interface
+</footer>
+
+<script src="/static/js/common.js"></script>
+<script>
+let TOKEN = '';
+function getToken() { return document.getElementById('token').value.trim(); }
+function api(path, opts) {
+  opts = opts || {};
+  opts.headers = Object.assign({ 'X-Admin-Token': myToken() }, opts.headers || {});
+  return fetch(path, opts);
+}
+function myToken() { return sessionStorage.getItem('litreview_admin_token') || ''; }
+
+function loadSubs() {
+  const t = getToken();
+  if (!t) { showErr('Enter the admin token.'); return; }
+  sessionStorage.setItem('litreview_admin_token', t);
+  document.getElementById('token').value = '';
+  refresh();
+}
+
+function refresh() {
+  const box = document.getElementById('queue');
+  api('/api/v1/admin/submissions').then(function (r) {
+    if (r.status === 401) { box.innerHTML = '<p class="empty">Invalid admin token.</p>'; return; }
+    return r.json().then(function (j) { render(j.submissions || []); });
+  }).catch(function () {
+    box.innerHTML = '<p class="empty">Could not reach the moderation API.</p>';
+  });
+}
+
+function showErr(msg) {
+  const box = document.getElementById('queue');
+  box.innerHTML = '<p class="empty">' + escapeHtml(msg) + '</p>';
+}
+
+function render(subs) {
+  const box = document.getElementById('queue');
+  const count = document.getElementById('count');
+  const pending = subs.filter(function (s) { return s.status === 'pending'; });
+  count.textContent = pending.length + ' pending · ' + (subs.length - pending.length) + ' processed';
+  box.innerHTML = '';
+  if (!pending.length) {
+    box.innerHTML = '<p class="empty">No pending submissions. All caught up 👍</p>';
+    return;
+  }
+  pending.forEach(function (s) {
+    const card = document.createElement('div');
+    card.className = 'sub-card';
+    card.innerHTML =
+      '<div class="head">' +
+        '<div><div class="meta-sm">' + escapeHtml(s.sid) + ' · ' + escapeHtml(s.received_at ? s.received_at.replace('T',' ').slice(0,16) : '') + ' · ' + escapeHtml(s.area) + '</div>' +
+        '<div class="title" style="font-weight:600;font-size:1.05rem;margin-top:.25rem">' + escapeHtml(s.title) + '</div>' +
+        '<div class="muted small">' + escapeHtml((s.authors || []).join(', ')) + '</div>' +
+        '<div class="muted small">' + escapeHtml(s.contact_name) + ' &lt;' + escapeHtml(s.contact_email) + '&gt;</div>' +
+        '</div>' +
+        '<span class="pill pill-pending">pending</span>' +
+      '</div>' +
+      '<p class="small muted" style="margin-top:.75rem">' + escapeHtml((s.abstract || '').slice(0, 400)) + (s.abstract && s.abstract.length > 400 ? '…' : '') + '</p>' +
+      (s.keywords && s.keywords.length ? '<div class="small" style="margin-top:.5rem">' + s.keywords.map(function (k) { return '<span class="tag">' + escapeHtml(k) + '</span>'; }).join(' ') + '</div>' : '') +
+      '<details class="sub-details"><summary>Show full content (' + ((s.content_len) || '') + ' chars)</summary><div class="sub-body"></div></details>' +
+      '<div class="sub-actions">' +
+        '<button class="btn btn-primary btn-sm" onclick="action(\'' + s.sid + '\',\'approve\',this)">✓ Approve & publish</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="action(\'' + s.sid + '\',\'reject\',this)">✕ Reject</button>' +
+      '</div>';
+    box.appendChild(card);
+    const details = card.querySelector('details');
+    const body = card.querySelector('.sub-body');
+    details.addEventListener('toggle', function () {
+      if (details.open && !body.dataset.loaded) {
+        body.dataset.loaded = '1';
+        fetch('/api/v1/admin/content/' + encodeURIComponent(s.sid), { headers: { 'X-Admin-Token': myToken() } })
+          .then(function (r) { return r.text(); })
+          .then(function (t) { body.textContent = t; });
+      }
+    });
+  });
+}
+
+function action(sid, kind, btn) {
+  if (kind === 'reject' && !confirm('Reject this submission? This cannot be undone.')) return;
+  btn.disabled = true;
+  api('/api/v1/admin/' + kind + '/' + encodeURIComponent(sid), { method: 'POST' })
+    .then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    })
+    .then(function (res) {
+      if (res.ok) {
+        if (kind === 'approve') {
+          alert('Published as ' + res.j.id + ' → ' + res.j.url);
+        }
+        refresh();
+      } else {
+        alert('Error: ' + (typeof res.j.detail === 'string' ? res.j.detail : 'request failed'));
+        btn.disabled = false;
+      }
+    })
+    .catch(function () { alert('Network error'); btn.disabled = false; });
+}
+</script>
+</body>
+</html>

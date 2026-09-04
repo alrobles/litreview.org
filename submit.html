@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Submit a review — LitReview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Submit a literature review to LitReview, the open repository of expert-written, AI-assisted literature reviews for the basic sciences.">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand"><span>Lit</span>Review</a>
+  <div class="nav-links">
+    <a href="/browse.html">Browse</a>
+    <a href="/submit.html" class="active">Submit</a>
+    <a href="/about.html">About</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+  </div>
+</nav>
+
+<main class="container narrow">
+  <h1 class="page-title">Submit a review</h1>
+  <p class="subtitle">Write a literature review on a topic within an active area — using AI tools as drafting, synthesis, and fact-checking aids — and share it with the community. Submissions enter a moderation queue; once approved they are published with an arXiv-style identifier.</p>
+
+  <form id="submit-form" class="form-box" novalidate>
+    <div class="form-grid">
+      <div class="full">
+        <label for="title">Title of the review</label>
+        <input type="text" id="title" name="title" maxlength="300" required placeholder="e.g. Species Distribution Models in the Era of Deep Learning: A Synthesis">
+      </div>
+      <div class="full">
+        <label for="authors">Authors (comma-separated)</label>
+        <input type="text" id="authors" name="authors" maxlength="500" required placeholder="Jane Doe, John Smith">
+      </div>
+      <div>
+        <label for="area">Scientific area</label>
+        <select id="area" name="area" required></select>
+      </div>
+      <div>
+        <label for="keywords">Keywords (comma-separated)</label>
+        <input type="text" id="keywords" name="keywords" maxlength="500" placeholder="species distribution models, deep learning">
+      </div>
+      <div class="full">
+        <label for="abstract">Abstract</label>
+        <textarea id="abstract" name="abstract" rows="5" maxlength="4000" required placeholder="Brief summary of the review (a paragraph)."></textarea>
+      </div>
+      <div class="full">
+        <label for="content">Review content (Markdown)</label>
+        <textarea id="content" name="content" rows="18" required placeholder="Write the full review in Markdown. Headings, lists, links, and code blocks are supported."></textarea>
+        <p class="hint">Minimum 100 characters. Only the rendered HTML is published, plus a plain-text Markdown source file.</p>
+      </div>
+      <div>
+        <label for="contact_name">Contact name</label>
+        <input type="text" id="contact_name" name="contact_name" maxlength="200" required placeholder="Your name">
+      </div>
+      <div>
+        <label for="contact_email">Contact email</label>
+        <input type="email" id="contact_email" name="contact_email" maxlength="200" required placeholder="you@institution.org">
+      </div>
+    </div>
+    <div class="full" style="margin-top:1rem">
+      <label>Live preview</label>
+      <div id="preview" class="preview-pane prose"></div>
+    </div>
+    <div style="margin-top:1.5rem">
+      <label><input type="checkbox" id="consent" required> I confirm this is an original review written by the named authors (who may have used AI tools as writing aids), and I agree to its publication under the site's open-access terms.</label>
+    </div>
+    <div class="form-status" id="status"></div>
+    <button type="submit" class="btn btn-primary" id="submit-btn" style="margin-top:1.25rem">Submit review</button>
+  </form>
+</main>
+
+<footer class="footer">
+  LitReview © 2026 · Expert-written literature reviews, AI-assisted · <a href="https://github.com/alrobles/litreview.org" target="_blank" rel="noopener">GitHub</a>
+</footer>
+
+<script src="/static/js/common.js"></script>
+<script>
+const areas = ['ecology-evolution', 'computer-science'];
+const areaSel = document.getElementById('area');
+areas.forEach(function (a) {
+  const o = document.createElement('option');
+  o.value = a;
+  o.textContent = a.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  areaSel.appendChild(o);
+});
+
+const content = document.getElementById('content');
+const preview = document.getElementById('preview');
+content.addEventListener('input', function () {
+  preview.innerHTML = content.value.trim() ? renderMarkdown(content.value) : '';
+});
+const form = document.getElementById('submit-form');
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  const status = document.getElementById('status');
+  status.className = 'form-status';
+  status.style.display = 'none';
+  const data = {
+    title: document.getElementById('title').value.trim(),
+    authors: document.getElementById('authors').value.trim().replace(/,\s*$/, ''),
+    area: areaSel.value,
+    abstract: document.getElementById('abstract').value.trim(),
+    keywords: document.getElementById('keywords').value.trim(),
+    content: content.value.trim(),
+    contact_name: document.getElementById('contact_name').value.trim(),
+    contact_email: document.getElementById('contact_email').value.trim()
+  };
+  if (!document.getElementById('consent').checked) {
+    status.className = 'form-status err'; status.style.display = 'block';
+    status.textContent = 'You must confirm the authorship and terms checkbox.';
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  fetch('/api/v1/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(function (r) {
+    return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+  }).then(function (res) {
+    status.className = 'form-status ' + (res.ok ? 'ok' : 'err');
+    status.style.display = 'block';
+    if (res.ok) {
+      status.textContent = res.j.message;
+      form.reset(); preview.innerHTML = '';
+    } else {
+      const detail = res.j.detail;
+      status.textContent = typeof detail === 'string' ? detail : ('Submission failed: ' + JSON.stringify(detail || {}));
+    }
+  }).catch(function () {
+    status.className = 'form-status err'; status.style.display = 'block';
+    status.textContent = 'Network error — please try again.';
+  }).finally(function () {
+    btn.disabled = false; btn.textContent = 'Submit review';
+  });
+});
+</script>
+</body>
+</html>

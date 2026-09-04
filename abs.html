@@ -4,67 +4,57 @@
 <meta charset="utf-8">
 <title>LitReview</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://cdn.tailwindcss.com" rel="stylesheet">
-<script>
-function applyTheme(){const d=localStorage.theme==='dark'||(!('theme'in localStorage)&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}
-applyTheme();
-function toggleTheme(){document.documentElement.classList.toggle('dark');localStorage.theme=document.documentElement.classList.contains('dark')?'dark':'light';}
-</script>
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-[#0a0a0a] dark:text-gray-100 min-h-screen flex flex-col">
+<body>
 
-<nav class="flex justify-between items-center px-8 py-4 bg-white dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800">
-  <a href="/" class="font-bold text-xl"><span style="color:var(--primary)">Lit</span>Review</a>
-  <div class="flex gap-6 items-center text-sm">
-    <a href="/browse.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">Browse</a>
-    <a href="/about.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">About</a>
-    <button onclick="toggleTheme()" class="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:scale-110 transition-transform">🌓</button>
+<nav class="nav">
+  <a href="/" class="nav-brand"><span>Lit</span>Review</a>
+  <div class="nav-links">
+    <a href="/browse.html">Browse</a>
+    <a href="/submit.html">Submit</a>
+    <a href="/about.html">About</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
   </div>
 </nav>
 
-<main id="content" class="flex-1 w-full max-w-3xl mx-auto px-8 py-12">
-  <p class="text-gray-400">Loading…</p>
+<main id="content" class="container narrow">
+  <p class="empty">Loading…</p>
 </main>
 
-<footer class="px-8 py-8 text-center text-sm text-gray-500 border-t border-gray-200 dark:border-gray-800">
-  LitReview © 2026 · AI-generated content is provided with curation but without warranty
+<footer class="footer">
+  LitReview © 2026 · Expert-written literature reviews, AI-assisted
 </footer>
 
+<script src="/static/js/common.js"></script>
 <script>
-const params=new URLSearchParams(location.search);
-const id=params.get('id');
-fetch('/data/reviews.json').then(r=>r.json()).then(data=>{
-  const r=data.reviews.find(x=>x.id===id)||data.reviews[0];
-  const area=data.areas.find(a=>a.id===r.area);
-  document.title=`[${r.id}] ${r.title}`;
-  const main=document.getElementById('content');
-  main.innerHTML=`
-  <div class="text-xs text-gray-400 mb-4">
-    <a href="/browse.html" class="hover:underline">← All reviews</a>
-  </div>
-  <div class="mb-2 text-sm font-semibold" style="color:var(--primary)">${area?area.name:r.area}</div>
-  <h1 class="text-3xl font-bold leading-tight">${r.title}</h1>
-  <p class="mt-3 text-gray-500 dark:text-gray-400">${r.authors.join(', ')}</p>
-  <p class="mt-1 text-sm text-gray-400 font-mono">${r.id} · Submitted ${r.date} · ${r.ai_model}</p>
-
-  <aside class="my-6 p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] text-sm">
-    <div class="font-semibold mb-2">Access formats:</div>
-    <div class="flex flex-wrap gap-x-6 gap-y-1">
-      <a href="/papers/${r.id}/main.pdf" class="hover:underline" style="color:var(--primary)">📄 PDF</a>
-      <a href="/papers/${r.id}/index.html" class="hover:underline" style="color:var(--primary)">🌐 HTML (experimental)</a>
-      <a href="/papers/${r.id}/main.tex" class="hover:underline" style="color:var(--primary)">📝 LaTeX source</a>
-    </div>
-  </aside>
-
-  <h2 class="font-bold mt-8 mb-2">Abstract</h2>
-  <p class="leading-relaxed text-gray-700 dark:text-gray-300">${r.abstract}</p>
-
-  <h2 class="font-bold mt-8 mb-2">Keywords</h2>
-  <div class="flex flex-wrap gap-2">${(r.keywords||[]).map(k=>`<span class="px-3 py-1 rounded-full text-xs bg-gray-100 dark:bg-gray-800">${k}</span>`).join('')}</div>
-
-  <div class="mt-10 p-4 text-xs text-gray-400 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-    This literature review was generated with AI assistance and curated for accuracy. Citations within the full text should be verified against the primary literature.
-  </div>`;
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+loadData().then(function (data) {
+  const r = data.reviews.find(function (x) { return x.id === id; });
+  if (!r || r.status === 'hidden') { document.getElementById('content').innerHTML = '<p class="empty">Review not found.</p>'; return; }
+  const area = data.areas.find(function (a) { return a.id === r.area; });
+  document.title = '[' + r.id + '] ' + r.title;
+  const main = document.getElementById('content');
+  const formats = [];
+  if (r.status === 'published') {
+    formats.push('<a href="/papers/' + r.id + '/index.html">🌐 HTML</a>');
+    formats.push('<a href="/papers/' + r.id + '/main.md">📝 Markdown</a>');
+  }
+  main.innerHTML =
+    '<p class="meta-sm"><a href="/browse.html">&larr; All reviews</a></p>' +
+    '<div class="area-badge">' + escapeHtml(area ? area.name : r.area) + '</div>' +
+    '<h1 class="page-title">' + escapeHtml(r.title) + '</h1>' +
+    '<p class="muted">' + escapeHtml(r.authors.join(', ')) + '</p>' +
+    '<p class="meta-sm">' + escapeHtml(r.id) + ' · Published ' + escapeHtml(r.date) + '</p>' +
+    (formats.length ? '<aside class="card" style="cursor:default;margin:1.5rem 0"><div class="small" style="font-weight:600;margin-bottom:.5rem">Access formats:</div><div class="small">' + formats.join(' <span class="faint">·</span> ') + '</div></aside>' : '') +
+    '<h2 class="section-title" style="font-size:1.25rem;margin:1.5rem 0 .5rem">Abstract</h2>' +
+    '<p class="prose">' + escapeHtml(r.abstract) + '</p>' +
+    (r.keywords && r.keywords.length ?
+      '<h2 class="section-title" style="font-size:1.25rem;margin:1.5rem 0 .5rem">Keywords</h2>' +
+      '<div class="small">' + r.keywords.map(function (k) { return '<span class="tag">' + escapeHtml(k) + '</span>'; }).join(' ') + '</div>' : '');
+}).catch(function () {
+  document.getElementById('content').innerHTML = '<p class="empty">Could not load review.</p>';
 });
 </script>
 </body>

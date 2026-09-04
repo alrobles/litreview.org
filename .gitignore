@@ -1,0 +1,5 @@
+# litreview.org v2 — community review intake
+.submissions/
+__pycache__/
+*.pyc
+.env

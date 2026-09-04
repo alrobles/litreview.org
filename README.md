@@ -1,48 +1,71 @@
 # litreview.org
 
-**ai.litreview.org** — an arXiv-style repository of AI-generated literature
-reviews for the basic sciences, starting with Ecology & Evolution.
+**litreview.org** — an arXiv-style repository of literature reviews written by
+scientists with AI assistance.
 
 ## What this is
 
-Each review has an arXiv-style identifier (`YYMM.NNNNN`), an abstract page,
-and three distribution formats like arXiv: LaTeX source (`main.tex`),
-compiled PDF (`main.pdf`), and standalone HTML (`index.html`).
+An open repository of literature reviews **written by scientists with AI
+assistance** (AI as drafting, synthesis, and fact-checking aid), curated by a
+human moderator. Reviews are not auto-generated. Each review has an arXiv-style
+identifier (`YYMM.NNNNN`), an abstract page, and is published as standalone HTML
+plus Markdown source.
 
 ## Structure
 
 ```
-├── index.html          # landing + recent submissions
+├── index.html          # landing + recent reviews
 ├── browse.html         # full listing, filter by area
-├── abs.html            # abstract page (?id=2608.00001)
-├── about.html          # mission & methodology
-├── data/reviews.json   # single index of all entries
+├── abs.html            # abstract page (?id=2609.00001)
+├── about.html          # mission
+├── submit.html         # public submission form
+├── admin.html          # moderation queue (token-gated)
+├── app/                # FastAPI backend (submit + moderation API)
+├── static/             # self-hosted CSS/JS (no CDN)
+├── data/reviews.json   # index of all entries
+├── .submissions/       # pending submissions (gitignored, not published)
 └── papers/
-    └── 2608.00001/     # one directory per review
-        ├── main.tex    # LaTeX source
-        ├── main.pdf    # compiled PDF
-        └── index.html  # standalone HTML rendering
+    └── 2609.00001/     # one directory per published review
+        ├── main.md     # Markdown source
+        └── index.html  # rendered HTML
 ```
 
-## Adding a review
+## Adding a review (user flow)
 
-1. Create `papers/<YYMM.NNNNN>/` with `main.tex`, compile to `main.pdf`
-   (`pdflatex main.tex`) and render `index.html`
-   (`pandoc main.tex -s -o index.html`).
-2. Add an entry to `data/reviews.json`.
-3. Commit and push; the site picks it up automatically (no build step).
+1. A scientist submits a review (written with AI assistance) through `/submit.html` (title, authors, area,
+   abstract, keywords, Markdown body, contact).
+2. The submission lands in `.submissions/` as `pending`.
+3. A moderator approves or rejects it from `/admin.html` (token-gated).
+4. On approval the backend assigns the next `YYMM.NNNNN` id, renders the review
+   to `papers/<id>/`, and updates `data/reviews.json`. Nothing is public until
+   then — and nothing is public in the repo until you commit it.
 
-## Areas
+## Moderation
 
-- Ecology & Evolution — active
-- Physics — coming soon
+- Admin API: `GET/POST /api/v1/admin/*` with `X-Admin-Token`.
+- Token is passed at container start via `LITREVIEW_ADMIN_TOKEN` (local file,
+  never committed).
+- Rate limit: 5 submissions/hour/IP.
 
-## Deployment
+## Development & deployment
 
-Static site, no build step. Serve with any web server (nginx) and expose at
-`ai.litreview.org`. See `docs/designs/2026-08-25-litreview-design.md`.
+Single container: nginx (static + proxy) + uvicorn (API). The repo is
+bind-mounted into the container, so approved reviews are written straight into
+the working tree — commit and push to keep the public repo in sync.
+
+```
+docker build -t litreview-site:v2 .
+docker run -d --name litreview-site --restart unless-stopped \
+  -p 127.0.0.1:8670:80 \
+  -v $(pwd):/srv/litreview \
+  -e LITREVIEW_ADMIN_TOKEN="$(cat ~/env/litreview-admin-token)" \
+  litreview-site:v2
+```
+
+Exposed via Cloudflare Tunnel at `litreview.org` and `ai.litreview.org`.
 
 ## License & caveat
 
-Reviews are generated with AI assistance and human curation. Citations within
-full texts should be verified against primary literature.
+Reviews are written and owned by their named authors; they are published after
+curation. Verify claims with the primary literature. See
+`docs/designs/2026-08-25-litreview-design.md` for the original design.
