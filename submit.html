@@ -51,9 +51,17 @@
         <p class="hint">Declaring AI assistance is normal here and never affects acceptance. It is published on the review page as a disclosure, alongside the CC BY 4.0 license.</p>
       </div>
       <div class="full">
-        <label for="content">Review content (Markdown)</label>
+        <label for="format">Source format</label>
+        <select id="format" name="format">
+          <option value="markdown" selected>Markdown</option>
+          <option value="latex">LaTeX</option>
+        </select>
+        <p class="hint" id="format-hint">Markdown is fast to write and renders instantly in the live preview. LaTeX is compiled to PDF on approval.</p>
+      </div>
+      <div class="full">
+        <label for="content" id="content-label">Review content (Markdown)</label>
         <textarea id="content" name="content" rows="18" required placeholder="Write the full review in Markdown. Headings, lists, links, and code blocks are supported."></textarea>
-        <p class="hint">Minimum 100 characters. Only the rendered HTML is published, plus a plain-text Markdown source file.</p>
+        <p class="hint" id="content-hint">Minimum 100 characters. The rendered HTML is published, plus the Markdown source file.</p>
       </div>
       <div>
         <label for="contact_name">Contact name</label>
@@ -93,9 +101,28 @@ areas.forEach(function (a) {
 
 const content = document.getElementById('content');
 const preview = document.getElementById('preview');
-content.addEventListener('input', function () {
-  preview.innerHTML = content.value.trim() ? renderMarkdown(content.value) : '';
+const fmtSel = document.getElementById('format');
+const contentLabel = document.getElementById('content-label');
+const contentHint = document.getElementById('content-hint');
+function refreshPreview() {
+  if (fmtSel.value === 'latex') {
+    preview.innerHTML = '<pre class="prose">' + escapeHtml(content.value) + '</pre>';
+  } else {
+    preview.innerHTML = content.value.trim() ? renderMarkdown(content.value) : '';
+  }
+}
+fmtSel.addEventListener('change', function () {
+  const isLatex = fmtSel.value === 'latex';
+  contentLabel.textContent = isLatex ? 'Review content (LaTeX source)' : 'Review content (Markdown)';
+  contentHint.textContent = isLatex
+    ? 'A full LaTeX document: \\documentclass, packages, math, citations. On approval it is compiled to PDF (pdflatex) and rendered to HTML (pandoc + MathJax).'
+    : 'Minimum 100 characters. The rendered HTML is published, plus the Markdown source file.';
+  content.placeholder = isLatex
+    ? '\\documentclass[11pt]{article}\n\\usepackage{amsmath}\n\\begin{document}\n...'
+    : 'Write the full review in Markdown. Headings, lists, links, and code blocks are supported.';
+  refreshPreview();
 });
+content.addEventListener('input', refreshPreview);
 const form = document.getElementById('submit-form');
 form.addEventListener('submit', function (e) {
   e.preventDefault();
@@ -110,6 +137,7 @@ form.addEventListener('submit', function (e) {
     keywords: document.getElementById('keywords').value.trim(),
     ai_assist: document.getElementById('ai_assist').value.trim(),
     content: content.value.trim(),
+    format: fmtSel.value,
     contact_name: document.getElementById('contact_name').value.trim(),
     contact_email: document.getElementById('contact_email').value.trim()
   };

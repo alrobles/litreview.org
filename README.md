@@ -28,7 +28,9 @@ Markdown source under the **CC BY 4.0** license.
 ├── .submissions/       # pending submissions (gitignored, not published)
 └── papers/
     └── 2609.00001/     # one directory per published review
-        ├── main.md     # Markdown source
+        ├── main.md     # Markdown source (markdown submissions)
+        ├── main.tex    # LaTeX source (latex submissions)
+        ├── main.pdf    # compiled PDF (latex submissions)
         └── index.html  # rendered HTML
 ```
 
@@ -42,6 +44,21 @@ Markdown source under the **CC BY 4.0** license.
    to `papers/<id>/` (with citation metadata, AI-assistance disclosure, and CC BY 4.0
    license), and updates `data/reviews.json`. Nothing is public until
    then — and nothing is public in the repo until you commit it.
+
+## Formats
+
+Submissions are either **Markdown** or **LaTeX**:
+
+- **Markdown** — rendered to HTML with the `markdown` library.
+- **LaTeX** — compiled to `main.pdf` with `pdflatex` (two passes, no shell
+  escape) and converted to HTML with `pandoc --mathjax`; math renders via
+  self-hosted MathJax (`static/vendor/mathjax/tex-svg.js`).
+
+LaTeX sources must be self-contained (single file): use an inline
+`thebibliography` environment instead of `\bibliography{...}`. Compilation is
+sandboxed (`-no-shell-escape`, `-halt-on-error`, 180s timeout). A failed
+compile blocks approval and the submission stays pending with the compiler
+log.
 
 ## Moderation
 

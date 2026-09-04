@@ -84,7 +84,7 @@ function render(subs) {
     card.className = 'sub-card';
     card.innerHTML =
       '<div class="head">' +
-        '<div><div class="meta-sm">' + escapeHtml(s.sid) + ' · ' + escapeHtml(s.received_at ? s.received_at.replace('T',' ').slice(0,16) : '') + ' · ' + escapeHtml(s.area) + '</div>' +
+        '<div><div class="meta-sm">' + escapeHtml(s.sid) + ' · ' + escapeHtml(s.received_at ? s.received_at.replace('T',' ').slice(0,16) : '') + ' · ' + escapeHtml(s.area) + ' · ' + escapeHtml(s.format || 'markdown').toUpperCase() + '</div>' +
         '<div class="title" style="font-weight:600;font-size:1.05rem;margin-top:.25rem">' + escapeHtml(s.title) + '</div>' +
         '<div class="muted small">' + escapeHtml((s.authors || []).join(', ')) + '</div>' +
         '<div class="muted small">' + escapeHtml(s.contact_name) + ' &lt;' + escapeHtml(s.contact_email) + '&gt;</div>' +

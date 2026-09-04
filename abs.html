@@ -39,7 +39,13 @@ loadData().then(function (data) {
   const formats = [];
   if (r.status === 'published') {
     formats.push('<a href="/papers/' + r.id + '/index.html">🌐 HTML</a>');
-    formats.push('<a href="/papers/' + r.id + '/main.md">📝 Markdown</a>');
+    const fmt = r.format || 'markdown';
+    if (fmt === 'latex') {
+      formats.push('<a href="/papers/' + r.id + '/main.pdf">📄 PDF</a>');
+      formats.push('<a href="/papers/' + r.id + '/main.tex">📜 LaTeX</a>');
+    } else {
+      formats.push('<a href="/papers/' + r.id + '/main.md">📝 Markdown</a>');
+    }
   }
   main.innerHTML =
     '<p class="meta-sm"><a href="/browse.html">&larr; All reviews</a></p>' +

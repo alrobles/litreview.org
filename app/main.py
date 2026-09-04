@@ -10,12 +10,13 @@ import os
 import re
 import secrets
 import shutil
+import subprocess
 import time
 import uuid
 from collections import defaultdict, deque
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 import markdown as md
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -30,6 +31,7 @@ SUBMISSIONS_DIR = ROOT / ".submissions"
 ADMIN_TOKEN = os.environ.get("LITREVIEW_ADMIN_TOKEN", "")
 
 ID_RE = re.compile(r"^\d{4}\.\d{5}$")
+DOMAIN = "litreview.org"
 
 app = FastAPI(title="LitReview API", docs_url=None, redoc_url=None)
 
@@ -62,6 +64,7 @@ class Submission(BaseModel):
     keywords: str = Field(default="", max_length=500)    # comma-separated
     ai_assist: str = Field(default="", max_length=1000)  # AI tools used (declaration)
     content: str = Field(min_length=100, max_length=120000)
+    format: Literal["markdown", "latex"] = "markdown"
     contact_name: str = Field(min_length=2, max_length=200)
     contact_email: EmailStr
 
@@ -98,6 +101,62 @@ def _markdown_to_html(text: str) -> str:
     """Render markdown to safe HTML for a review page."""
     return md.markdown(text, extensions=["extra", "sane_lists", "nl2br"])
 
+
+def _compile_latex(workdir: Path) -> tuple[bool, str]:
+    """Compile main.tex -> main.pdf with pdflatex (two passes for refs)."""
+    try:
+        r = None
+        for _ in range(2):
+            r = subprocess.run(
+                ["pdflatex", "-interaction=nonstopmode", "-halt-on-error",
+                 "-no-shell-escape", "-output-directory", str(workdir), "main.tex"],
+                cwd=workdir, capture_output=True, text=True, timeout=180)
+        pdf = workdir / "main.pdf"
+        if r is None or r.returncode != 0 or not pdf.exists():
+            log = workdir / "main.log"
+            tail = ""
+            if log.exists():
+                lines = [ln for ln in log.read_text(errors="replace").splitlines() if ln.strip()]
+                tail = "\n".join(lines[-12:])
+            return False, tail or "pdflatex failed (no log)"
+        for junk in ("aux", "log", "out"):
+            (workdir / f"main.{junk}").unlink(missing_ok=True)
+        return True, ""
+    except subprocess.TimeoutExpired:
+        return False, "pdflatex timed out after 180s"
+    except FileNotFoundError:
+        return False, "pdflatex not found in container"
+
+
+def _latex_to_html(tex: str) -> str:
+    """Convert LaTeX source to an HTML fragment (math stays as MathJax delimiters)."""
+    try:
+        r = subprocess.run(
+            ["pandoc", "-f", "latex", "-t", "html5", "--mathjax", "--wrap=none"],
+            input=tex, capture_output=True, text=True, timeout=90)
+        if r.returncode == 0 and r.stdout.strip():
+            return _number_citations(r.stdout, tex)
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+    return f"<pre>{escape(tex)}</pre>"
+
+
+def _number_citations(html: str, tex: str) -> str:
+    """Replace pandoc's empty citation spans with [n] numbers.
+
+    pandoc keeps inline thebibliography items but renders \\cite as empty
+    spans when no citeproc engine runs; number them by \\bibitem order.
+    """
+    keys = re.findall(r"\\bibitem\{([^}]+)\}", tex)
+    idx = {k: i + 1 for i, k in enumerate(keys)}
+
+    def repl(m: re.Match) -> str:
+        cites = re.split(r"[\s,]+", m.group(1))
+        nums = ", ".join(str(idx.get(k, "?")) for k in cites if k)
+        return f"<sup class=\"cite-num\">[{nums}]</sup>"
+
+    return re.sub(r'<span class="citation" data-cites="([^"]+)"></span>', repl, html)
+
 def _submission_dir(sid: str) -> Path:
     d = SUBMISSIONS_DIR / sid
     if not d.is_dir():
@@ -124,13 +183,14 @@ async def submit(request: Request, sub: Submission):
         "keywords": [k.strip() for k in sub.keywords.split(",") if k.strip()],
         "ai_assist": sub.ai_assist.strip(),
         "content": sub.content,
+        "format": sub.format,
         "contact_name": sub.contact_name,
         "contact_email": sub.contact_email,
         "received_at": datetime.now(timezone.utc).isoformat(),
         "status": "pending",
     }
     (d / "payload.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False))
-    (d / "content.md").write_text(sub.content)
+    (d / ("content.tex" if sub.format == "latex" else "content.md")).write_text(sub.content)
     return {"ok": True, "sid": sid, "message": "Review submitted. It will appear after moderation."}
 
 # ---------- admin API ----------
@@ -161,7 +221,8 @@ async def submission_content(sid: str, x_admin_token: Optional[str] = Header(Non
     check_admin(x_admin_token)
     if not re.fullmatch(r"[\w-]+", sid):
         raise HTTPException(400, "Bad sid")
-    f = _submission_dir(sid) / "content.md"
+    p = _read_payload(sid)
+    f = _submission_dir(sid) / ("content.tex" if p.get("format") == "latex" else "content.md")
     if not f.exists():
         raise HTTPException(404, "No content")
     return Response(f.read_text(), media_type="text/plain")
@@ -197,12 +258,21 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
     data["reviews"].append(entry)
     data["reviews"].sort(key=lambda r: r["id"], reverse=True)
 
-    # content: markdown source + rendered HTML page
+    # content: source (markdown or latex) + rendered HTML page (+ PDF for latex)
     papers_dir = ROOT / "papers" / rid
     papers_dir.mkdir(parents=True, exist_ok=False)
-    body_html = _markdown_to_html(p["content"])
-    html = _render_review_page(entry, body_html)
-    (papers_dir / "main.md").write_text(p["content"])
+    fmt = p.get("format", "markdown")
+    if fmt == "latex":
+        (papers_dir / "main.tex").write_text(p["content"])
+        ok, err = _compile_latex(papers_dir)
+        if not ok:
+            shutil.rmtree(papers_dir, ignore_errors=True)
+            raise HTTPException(400, f"LaTeX compilation failed — fix the source and resubmit:\n{err[:400]}")
+        body_html = _latex_to_html(p["content"])
+    else:
+        (papers_dir / "main.md").write_text(p["content"])
+        body_html = _markdown_to_html(p["content"])
+    html = _render_review_page(entry, body_html, fmt)
     (papers_dir / "index.html").write_text(html)
 
     _save_data(data)
@@ -247,6 +317,7 @@ _REVIEW_TEMPLATE = """<!doctype html>
 <meta name="citation_language" content="en">
 <meta name="citation_abstract" content="{abstract}">
 {citation_keywords}
+{citation_pdf}
 <script type="application/ld+json">{jsonld}</script>
 </head>
 <body class="page-review">
@@ -270,15 +341,16 @@ _REVIEW_TEMPLATE = """<!doctype html>
   <hr>
   {body}
   <hr>
-  <p class="meta-sm">Source: <a href="/papers/{rid}/main.md">main.md</a> &middot;
+  <p class="meta-sm">{source_links} &middot;
   Report an issue: <a href="mailto:{contact}">contact</a></p>
 </main>
 <footer class="footer">LitReview © 2026 &middot; Citable literature reviews written with AI assistance &middot; CC BY 4.0</footer>
+<script id="MathJax-script" async src="/static/vendor/mathjax/tex-svg.js"></script>
 </body>
 </html>"""
 
 
-def _render_review_page(entry: dict, body_html: str) -> str:
+def _render_review_page(entry: dict, body_html: str, fmt: str = "markdown") -> str:
     """Render the full HTML page for an approved review.
 
     Includes machine-readable citation metadata (citation_* meta tags for
@@ -320,6 +392,14 @@ def _render_review_page(entry: dict, body_html: str) -> str:
         f'{escape(entry["id"])} (LitReview, {escape(entry.get("date", ""))}). '
         f'{escape(entry["title"])}. ' + "; ".join(esc_authors) + "."
     )
+    if fmt == "latex":
+        source_links = (f'Source: <a href="/papers/{entry["id"]}/main.tex">main.tex</a>'
+                        f' &middot; <a href="/papers/{entry["id"]}/main.pdf">PDF</a>')
+        citation_pdf = (f'<meta name="citation_pdf_url" content="https://{DOMAIN}'
+                        f'/papers/{entry["id"]}/main.pdf">')
+    else:
+        source_links = f'Source: <a href="/papers/{entry["id"]}/main.md">main.md</a>'
+        citation_pdf = ""
     return _REVIEW_TEMPLATE.format(
         rid=escape(entry["id"]),
         title=escape(entry["title"]),
@@ -336,4 +416,6 @@ def _render_review_page(entry: dict, body_html: str) -> str:
         citation_text=citation_text,
         coins=f'<span class="Z3988" title="{coins}" aria-hidden="true"></span>',
         jsonld=json.dumps(jsonld, ensure_ascii=False),
+        source_links=source_links,
+        citation_pdf=citation_pdf,
     )

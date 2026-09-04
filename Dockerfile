@@ -3,7 +3,7 @@
 FROM python:3.12-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends nginx \
+    && apt-get install -y --no-install-recommends nginx pandoc texlive-latex-recommended \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv/litreview

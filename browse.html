@@ -85,6 +85,7 @@ function renderList(area) {
           '<div class="title">' + escapeHtml(r.title) + '</div>' +
           '<div class="auth">' + escapeHtml(r.authors.join(', ')) + '</div>' +
           (r.ai_assist ? '<span class="pill pill-ai">AI-assisted</span> ' : '') +
+          '<span class="pill pill-fmt">' + ((r.format || 'markdown') === 'latex' ? 'LaTeX + PDF' : 'Markdown') + '</span> ' +
           '<p class="abs">' + escapeHtml(r.abstract.slice(0, 220)) + (r.abstract.length > 220 ? '…' : '') + '</p>' +
         '</div>' +
         '<span class="pill pill-area">' + escapeHtml(areaName(AREAS, r.area)) + '</span>' +

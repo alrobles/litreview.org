@@ -117,6 +117,8 @@ a.card:hover { text-decoration: none; border-color: var(--primary); transform: t
 html.dark .pill-area { background: hsl(160 60% 20%); color: hsl(160 60% 75%); }
 .pill-ai { background: hsl(265 70% 92%); color: hsl(265 60% 30%); }
 html.dark .pill-ai { background: hsl(265 50% 22%); color: hsl(265 70% 80%); }
+.pill-fmt { background: hsl(190 70% 92%); color: hsl(190 70% 25%); }
+html.dark .pill-fmt { background: hsl(190 60% 18%); color: hsl(190 70% 78%); }
 .pill-flag { background: var(--code-bg); color: var(--text-muted); }
 .pill-pending { background: #fef3c7; color: #92400e; }
 .pill-rejected { background: #fee2e2; color: #991b1b; }
