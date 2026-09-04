@@ -7,9 +7,11 @@ scientists with AI assistance.
 
 An open repository of literature reviews **written by scientists with AI
 assistance** (AI as drafting, synthesis, and fact-checking aid), curated by a
-human moderator. Reviews are not auto-generated. Each review has an arXiv-style
-identifier (`YYMM.NNNNN`), an abstract page, and is published as standalone HTML
-plus Markdown source.
+human moderator. Reviews are not auto-generated. AI use is **declared openly
+on every review** — using agentic AI is the norm here, never a disqualifier.
+Each review has an arXiv-style identifier (`YYMM.NNNNN`), an abstract page,
+machine-readable citation metadata, and is published as standalone HTML plus
+Markdown source under the **CC BY 4.0** license.
 
 ## Structure
 
@@ -33,11 +35,12 @@ plus Markdown source.
 ## Adding a review (user flow)
 
 1. A scientist submits a review (written with AI assistance) through `/submit.html` (title, authors, area,
-   abstract, keywords, Markdown body, contact).
+   abstract, keywords, optional `ai_assist` disclosure of AI tools, Markdown body, contact).
 2. The submission lands in `.submissions/` as `pending`.
 3. A moderator approves or rejects it from `/admin.html` (token-gated).
 4. On approval the backend assigns the next `YYMM.NNNNN` id, renders the review
-   to `papers/<id>/`, and updates `data/reviews.json`. Nothing is public until
+   to `papers/<id>/` (with citation metadata, AI-assistance disclosure, and CC BY 4.0
+   license), and updates `data/reviews.json`. Nothing is public until
    then — and nothing is public in the repo until you commit it.
 
 ## Moderation
@@ -67,5 +70,7 @@ Exposed via Cloudflare Tunnel at `litreview.org` and `ai.litreview.org`.
 ## License & caveat
 
 Reviews are written and owned by their named authors; they are published after
-curation. Verify claims with the primary literature. See
-`docs/designs/2026-08-25-litreview-design.md` for the original design.
+curation under **CC BY 4.0** (attribution required). AI assistance is declared
+per review; use of AI tools never disqualifies a submission. Verify claims with
+the primary literature. See `docs/designs/2026-08-25-litreview-design.md` for
+the original design.

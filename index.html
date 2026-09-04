@@ -22,7 +22,7 @@
 <header class="hero">
   <p class="domain">litreview.org</p>
   <h1>Literature reviews written by scientists,<br>with AI as a writing partner</h1>
-  <p>An open repository of expert-written, AI-assisted literature reviews for the basic sciences — starting with Ecology &amp; Evolution.</p>
+  <p>Every review here is written and owned by a human scientist. Agentic AI is used openly as a drafting, synthesis, and fact-checking partner — it is declared on every review, never hidden, never a disqualifier.</p>
   <div class="hero-actions">
     <a href="/browse.html" class="btn btn-primary">Browse reviews</a>
     <a href="/submit.html" class="btn btn-outline">Submit a review</a>
@@ -62,7 +62,7 @@
 <footer class="footer">
   <a href="https://github.com/alrobles/litreview.org" class="mx-2" target="_blank" rel="noopener">GitHub</a> ·
   Ecology &amp; Evolution · Computer Science<br><br>
-  LitReview © 2026 · Expert-written literature reviews, AI-assisted
+  LitReview © 2026 · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · Citable literature reviews, written by scientists with AI assistance
 </footer>
 
 <script src="/static/js/common.js"></script>
@@ -79,6 +79,7 @@ loadData().then(function (data) {
           '<div class="id-line">' + escapeHtml(r.id) + ' <span class="faint">[' + escapeHtml(r.date) + ']</span></div>' +
           '<div class="title">' + escapeHtml(r.title) + '</div>' +
           '<div class="auth">' + escapeHtml(r.authors.join(', ')) + '</div>' +
+          (r.ai_assist ? '<span class="pill pill-ai">AI-assisted</span> ' : '') +
         '</div>' +
         '<span class="pill pill-area">' + escapeHtml(areaName(data.areas, r.area)) + '</span>' +
       '</div>';

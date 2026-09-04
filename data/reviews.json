@@ -2,9 +2,9 @@
   "site": {
     "name": "LitReview",
     "domain": "litreview.org",
-    "description": "Expert-written literature reviews, AI-assisted, for the basic sciences",
+    "description": "Citable literature reviews written by scientists with AI assistance, for the basic sciences",
     "contact": "a.l.robles.fernandez@gmail.com",
-    "version": 2
+    "version": 3
   },
   "areas": [
     {
@@ -41,6 +41,7 @@
       ],
       "status": "published",
       "origin": "seed-review",
+      "ai_assist": "Agentic AI assistants (Claude, DeepSeek) — drafting, synthesis, fact-checking",
       "reviewed_by": {
         "name": "A. L. Robles Fernández",
         "email": "a.l.robles.fernandez@gmail.com"

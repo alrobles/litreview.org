@@ -21,7 +21,7 @@
 
 <main class="container narrow">
   <h1 class="page-title">Submit a review</h1>
-  <p class="subtitle">Write a literature review on a topic within an active area — using AI tools as drafting, synthesis, and fact-checking aids — and share it with the community. Submissions enter a moderation queue; once approved they are published with an arXiv-style identifier.</p>
+  <p class="subtitle">Write a literature review on a topic within an active area and submit it as a citable preprint. Using agentic AI tools as drafting, synthesis, and fact-checking aids is the norm here — declare them openly; it never affects acceptance. Approved reviews receive an arXiv-style identifier, citation metadata, and a CC BY 4.0 license.</p>
 
   <form id="submit-form" class="form-box" novalidate>
     <div class="form-grid">
@@ -46,6 +46,11 @@
         <textarea id="abstract" name="abstract" rows="5" maxlength="4000" required placeholder="Brief summary of the review (a paragraph)."></textarea>
       </div>
       <div class="full">
+        <label for="ai_assist">AI assistance used (optional)</label>
+        <input type="text" id="ai_assist" name="ai_assist" maxlength="1000" placeholder="e.g. Claude Code, GPT-4, DeepSeek — drafting, synthesis, fact-checking">
+        <p class="hint">Declaring AI assistance is normal here and never affects acceptance. It is published on the review page as a disclosure, alongside the CC BY 4.0 license.</p>
+      </div>
+      <div class="full">
         <label for="content">Review content (Markdown)</label>
         <textarea id="content" name="content" rows="18" required placeholder="Write the full review in Markdown. Headings, lists, links, and code blocks are supported."></textarea>
         <p class="hint">Minimum 100 characters. Only the rendered HTML is published, plus a plain-text Markdown source file.</p>
@@ -64,7 +69,7 @@
       <div id="preview" class="preview-pane prose"></div>
     </div>
     <div style="margin-top:1.5rem">
-      <label><input type="checkbox" id="consent" required> I confirm this is an original review written by the named authors (who may have used AI tools as writing aids), and I agree to its publication under the site's open-access terms.</label>
+      <label><input type="checkbox" id="consent" required> I confirm this is an original review written by the named authors (who may have used AI tools as writing aids), that the AI assistance declared above is accurate, and I agree to its publication under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> license.</label>
     </div>
     <div class="form-status" id="status"></div>
     <button type="submit" class="btn btn-primary" id="submit-btn" style="margin-top:1.25rem">Submit review</button>
@@ -72,7 +77,7 @@
 </main>
 
 <footer class="footer">
-  LitReview © 2026 · Expert-written literature reviews, AI-assisted · <a href="https://github.com/alrobles/litreview.org" target="_blank" rel="noopener">GitHub</a>
+  LitReview © 2026 · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · Citable literature reviews, written by scientists with AI assistance · <a href="https://github.com/alrobles/litreview.org" target="_blank" rel="noopener">GitHub</a>
 </footer>
 
 <script src="/static/js/common.js"></script>
@@ -103,6 +108,7 @@ form.addEventListener('submit', function (e) {
     area: areaSel.value,
     abstract: document.getElementById('abstract').value.trim(),
     keywords: document.getElementById('keywords').value.trim(),
+    ai_assist: document.getElementById('ai_assist').value.trim(),
     content: content.value.trim(),
     contact_name: document.getElementById('contact_name').value.trim(),
     contact_email: document.getElementById('contact_email').value.trim()

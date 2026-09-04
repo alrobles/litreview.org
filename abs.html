@@ -23,7 +23,7 @@
 </main>
 
 <footer class="footer">
-  LitReview © 2026 · Expert-written literature reviews, AI-assisted
+  LitReview © 2026 · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · Citable literature reviews, written by scientists with AI assistance
 </footer>
 
 <script src="/static/js/common.js"></script>
@@ -47,6 +47,7 @@ loadData().then(function (data) {
     '<h1 class="page-title">' + escapeHtml(r.title) + '</h1>' +
     '<p class="muted">' + escapeHtml(r.authors.join(', ')) + '</p>' +
     '<p class="meta-sm">' + escapeHtml(r.id) + ' · Published ' + escapeHtml(r.date) + '</p>' +
+    (r.ai_assist ? '<p class="meta-sm">AI assistance: <strong>' + escapeHtml(r.ai_assist) + '</strong> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></p>' : '<p class="meta-sm">AI assistance: none declared · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></p>') +
     (formats.length ? '<aside class="card" style="cursor:default;margin:1.5rem 0"><div class="small" style="font-weight:600;margin-bottom:.5rem">Access formats:</div><div class="small">' + formats.join(' <span class="faint">·</span> ') + '</div></aside>' : '') +
     '<h2 class="section-title" style="font-size:1.25rem;margin:1.5rem 0 .5rem">Abstract</h2>' +
     '<p class="prose">' + escapeHtml(r.abstract) + '</p>' +

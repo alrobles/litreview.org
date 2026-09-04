@@ -22,6 +22,7 @@ from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from markupsafe import escape
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from urllib.parse import quote
 
 ROOT = Path(os.environ.get("LITREVIEW_ROOT", "/srv/litreview"))
 DATA_FILE = ROOT / "data" / "reviews.json"
@@ -59,6 +60,7 @@ class Submission(BaseModel):
     area: str = Field(min_length=3, max_length=50)
     abstract: str = Field(min_length=20, max_length=4000)
     keywords: str = Field(default="", max_length=500)    # comma-separated
+    ai_assist: str = Field(default="", max_length=1000)  # AI tools used (declaration)
     content: str = Field(min_length=100, max_length=120000)
     contact_name: str = Field(min_length=2, max_length=200)
     contact_email: EmailStr
@@ -120,6 +122,7 @@ async def submit(request: Request, sub: Submission):
         "area": sub.area,
         "abstract": sub.abstract,
         "keywords": [k.strip() for k in sub.keywords.split(",") if k.strip()],
+        "ai_assist": sub.ai_assist.strip(),
         "content": sub.content,
         "contact_name": sub.contact_name,
         "contact_email": sub.contact_email,
@@ -185,6 +188,7 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
         "area": p["area"],
         "abstract": p["abstract"],
         "keywords": p["keywords"],
+        "ai_assist": p.get("ai_assist", ""),
         "date": date.today().isoformat(),
         "status": "published",
         "reviewed_by": {"name": p["contact_name"], "email": p["contact_email"]},
@@ -234,6 +238,16 @@ _REVIEW_TEMPLATE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="{abstract}">
 <link rel="stylesheet" href="/static/css/style.css">
+<!-- citation metadata (Google Scholar, Zotero, semantic scholar) -->
+<meta name="citation_title" content="{title}">
+{citation_authors}
+<meta name="citation_publication_date" content="{date}">
+<meta name="citation_online_date" content="{date}">
+<meta name="citation_id" content="LitReview:{rid}">
+<meta name="citation_language" content="en">
+<meta name="citation_abstract" content="{abstract}">
+{citation_keywords}
+<script type="application/ld+json">{jsonld}</script>
 </head>
 <body class="page-review">
 <nav class="nav">
@@ -250,26 +264,76 @@ _REVIEW_TEMPLATE = """<!doctype html>
   <h1>{title}</h1>
   <p class="authors">{authors}</p>
   <p class="meta-sm">{rid} &middot; Published {date} &middot; Reviewed by {reviewer}</p>
+  <p class="meta-sm">AI assistance: <strong>{ai_assist}</strong> &middot; License: <a href="https://creativecommons.org/licenses/by/4.0/" rel="license" target="_blank" rel="noopener">CC BY 4.0</a></p>
+  <p class="meta-sm">How to cite: <em>{citation_text}</em></p>
+  {coins}
   <hr>
   {body}
   <hr>
   <p class="meta-sm">Source: <a href="/papers/{rid}/main.md">main.md</a> &middot;
   Report an issue: <a href="mailto:{contact}">contact</a></p>
 </main>
-<footer class="footer">LitReview © 2026 &middot; Expert-written literature reviews, AI-assisted</footer>
+<footer class="footer">LitReview © 2026 &middot; Citable literature reviews written with AI assistance &middot; CC BY 4.0</footer>
 </body>
 </html>"""
 
+
 def _render_review_page(entry: dict, body_html: str) -> str:
+    """Render the full HTML page for an approved review.
+
+    Includes machine-readable citation metadata (citation_* meta tags for
+    Google Scholar, JSON-LD ScholarlyArticle, and COinS for Zotero/Reference
+    Manager), a visible AI-assistance disclosure, and the CC BY 4.0 license.
+    """
     area = entry["area"].replace("-", " & ").title()
+    authors = entry["authors"]
+    esc_authors = [escape(a) for a in authors]
+    kw = entry.get("keywords", []) or []
+    citation_authors = "".join(
+        f'<meta name="citation_author" content="{escape(a)}">' for a in authors)
+    citation_keywords = "".join(
+        f'<meta name="citation_keywords" content="{escape(k)}">' for k in kw)
+    coins = "&".join([
+        "ctx_ver=Z39.88-2004",
+        "rft_val_fmt=info:ofi/fmt:kev:mtx:dc",
+        "rft.type=preprint",
+        "rft.title=" + quote(entry["title"]),
+        "rft.creator=" + quote("; ".join(authors)),
+        "rft.date=" + entry.get("date", ""),
+        "rft.identifier=" + quote(f"LitReview:{entry['id']}"),
+    ])
+    jsonld = {
+        "@context": "https://schema.org",
+        "@type": "ScholarlyArticle",
+        "headline": entry["title"],
+        "identifier": f"LitReview:{entry['id']}",
+        "datePublished": entry.get("date", ""),
+        "author": [{"@type": "Person", "name": a} for a in authors],
+        "abstract": entry.get("abstract", ""),
+        "isPartOf": {"@type": "Periodical", "name": "LitReview"},
+        "publisher": {"@type": "Organization", "name": "LitReview"},
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+    }
+    ai = (entry.get("ai_assist") or "").strip()
+    ai_display = escape(ai) if ai else "None declared — written without AI tools"
+    citation_text = (
+        f'{escape(entry["id"])} (LitReview, {escape(entry.get("date", ""))}). '
+        f'{escape(entry["title"])}. ' + "; ".join(esc_authors) + "."
+    )
     return _REVIEW_TEMPLATE.format(
         rid=escape(entry["id"]),
         title=escape(entry["title"]),
-        abstract=escape(entry["abstract"])[:160],
+        abstract=escape(entry.get("abstract", ""))[:300],
         area=escape(area),
-        authors=", ".join(escape(a) for a in entry["authors"]),
-        date=escape(entry["date"]),
-        reviewer=escape(entry["reviewed_by"]["name"]),
+        authors=", ".join(esc_authors),
+        citation_authors=citation_authors,
+        citation_keywords=citation_keywords,
+        date=escape(entry.get("date", "")),
+        reviewer=escape(entry.get("reviewed_by", {}).get("name", "")),
         body=body_html,
-        contact=escape(entry["reviewed_by"]["email"]),
+        contact=escape(entry.get("reviewed_by", {}).get("email", "")),
+        ai_assist=ai_display,
+        citation_text=citation_text,
+        coins=f'<span class="Z3988" title="{coins}" aria-hidden="true"></span>',
+        jsonld=json.dumps(jsonld, ensure_ascii=False),
     )
