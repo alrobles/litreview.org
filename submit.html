@@ -23,7 +23,18 @@
   <h1 class="page-title">Submit a review</h1>
   <p class="subtitle">Write a literature review on a topic within an active area and submit it as a citable preprint. Using agentic AI tools as drafting, synthesis, and fact-checking aids is the norm here — declare them openly; it never affects acceptance. Approved reviews receive an arXiv-style identifier, citation metadata, and a CC BY 4.0 license.</p>
 
-  <form id="submit-form" class="form-box" novalidate>
+  <div id="auth-box" class="form-box" style="margin-bottom:1.25rem;display:none">
+    <div id="auth-loggedout">
+      <p class="hint" style="margin-bottom:.5rem"><strong>Login required.</strong> Submitting a review is a digital signature: your GitHub identity is recorded as the responsible author of this submission.</p>
+      <a id="login-btn" class="btn btn-primary" href="/auth/login?return_to=/submit.html">⇪ Login with GitHub</a>
+    </div>
+    <div id="auth-loggedin" style="display:none">
+      <p class="hint" style="margin-bottom:.5rem">Signed in as <strong id="auth-name"></strong> <span id="auth-login" class="faint"></span> — your identity is attached to this submission as its responsible party.</p>
+      <button class="btn btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <form id="submit-form" class="form-box" novalidate style="display:none">
     <div class="form-grid">
       <div class="full">
         <label for="title">Title of the review</label>
@@ -99,6 +110,40 @@ areas.forEach(function (a) {
   areaSel.appendChild(o);
 });
 
+// ---- auth gate: check session, show form only if logged in ----
+const authBox = document.getElementById('auth-box');
+const loggedOut = document.getElementById('auth-loggedout');
+const loggedIn = document.getElementById('auth-loggedin');
+const form = document.getElementById('submit-form');
+function logout() {
+  fetch('/auth/logout', { method: 'POST' })
+    .then(function () { location.href = '/submit.html'; })
+    .catch(function () { location.href = '/submit.html'; });
+}
+fetch('/auth/me', { credentials: 'same-origin' })
+  .then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (me) {
+    authBox.style.display = 'block';
+    if (me && me.user) {
+      loggedOut.style.display = 'none';
+      loggedIn.style.display = 'block';
+      document.getElementById('auth-name').textContent = me.user.name || me.user.login;
+      document.getElementById('auth-login').textContent = '@' + me.user.login;
+      form.style.display = 'block';
+    } else {
+      loggedIn.style.display = 'none';
+      loggedOut.style.display = 'block';
+      form.style.display = 'none';
+    }
+  })
+  .catch(function () {
+    authBox.style.display = 'block';
+    loggedIn.style.display = 'none';
+    loggedOut.style.display = 'block';
+    form.style.display = 'none';
+  });
+form.addEventListener('submit', function (e) {
+
 const content = document.getElementById('content');
 const preview = document.getElementById('preview');
 const fmtSel = document.getElementById('format');
@@ -123,7 +168,6 @@ fmtSel.addEventListener('change', function () {
   refreshPreview();
 });
 content.addEventListener('input', refreshPreview);
-const form = document.getElementById('submit-form');
 form.addEventListener('submit', function (e) {
   e.preventDefault();
   const status = document.getElementById('status');

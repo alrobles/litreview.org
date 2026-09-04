@@ -116,6 +116,35 @@ The API key is passed via `OPENROUTER_API_KEY` (host file `~/env/openrouter-key`
 never committed. Scores are advisory — they influence the human's decision but
 never replace it.
 
+## OAuth — digital responsibility signature (v5)
+
+Submitting a review requires **GitHub OAuth**. The login is a digital
+signature: the submitter's verified GitHub identity is stored in the
+submission (`submitted_by`) and shown to the moderator, making every
+submission accountable. It proves control of a GitHub account — not humanness
+(a human-verification survey can be layered on later).
+
+- **App**: a DEDICATED GitHub OAuth App for litreview.org, deliberately
+  isolated from the agenticplug/ecoseek app — a login here grants nothing on
+  ecoseek.org or agenticplug, and vice versa.
+- **Flow** (in `app/auth.py`, stateless signed-cookie sessions):
+  `GET /auth/login` → GitHub authorize → `GET /auth/github/callback` →
+  HMAC-signed httpOnly cookie (`litreview_session`, 7d) → `GET /auth/me` /
+  `POST /auth/logout`. OAuth `state` is single-use in-memory (CSRF).
+- **Gate**: `POST /api/v1/submit` returns 401 without a valid session;
+  `payload.json` records `submitted_by` (login, id, name, verified_at).
+- **Env**: `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET` (host file
+  `~/env/litreview-oauth-credentials`), `LITREVIEW_SESSION_SECRET` (host file
+  `~/env/litreview-session-secret`), `LITREVIEW_BASE_URL=https://litreview.org`.
+- nginx proxies `/auth/` to uvicorn. Without the app configured, `/auth/login`
+  returns 503 and submit stays available for the moderator (who has the admin
+  token) — but public submissions require login.
+
+Create the app at `https://github.com/settings/developers` → OAuth Apps:
+name `litreview.org`, homepage `https://litreview.org`, callback
+`https://litreview.org/auth/github/callback` (also add `http://localhost:8670`
+for local testing).
+
 ## License & caveat
 
 Reviews are written and owned by their named authors; they are published after

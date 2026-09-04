@@ -19,8 +19,9 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from fastapi import BackgroundTasks
-from app.screening import (run_screening, sanitize_html, security_check,
-                           soft_quality_check, scientific_score)
+from fastapi.responses import RedirectResponse
+from app import auth
+from app.screening import run_screening, sanitize_html
 
 import markdown as md
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -189,14 +190,62 @@ def _reject_auto(sid: str, reason: str):
         json.dumps(p, indent=2, ensure_ascii=False))
 
 # ---------- public API ----------
+@app.get("/auth/login")
+async def auth_login(return_to: str = "/submit.html"):
+    if not auth.oauth_configured():
+        raise HTTPException(503, "OAuth is not configured on this server")
+    state = auth.put_state(return_to)
+    return RedirectResponse(auth.build_authorize_url(state))
+
+
+@app.get("/auth/github/callback")
+async def auth_callback(code: str = "", state: str = ""):
+    if not auth.oauth_configured():
+        raise HTTPException(503, "OAuth is not configured on this server")
+    if not code or not state:
+        raise HTTPException(400, "Missing code or state")
+    return_to = auth.take_state(state)
+    if return_to is None:
+        raise HTTPException(400, "Invalid or expired state")
+    user = auth.exchange_code(code)
+    if user is None:
+        raise HTTPException(502, "GitHub OAuth exchange failed")
+    cookie = auth.mint_session(user)
+    resp = RedirectResponse(return_to or "/submit.html")
+    # Secure cookie in production (https); allow http only for local dev
+    resp.headers["Set-Cookie"] = auth.session_cookie_header(
+        cookie, secure=os.environ.get("LITREVIEW_DEV_HTTP", "") != "1")
+    return resp
+
+
+@app.get("/auth/me")
+async def auth_me(request: Request):
+    sess = auth.read_session(request.cookies.get(auth.COOKIE_NAME, ""))
+    if sess is None:
+        raise HTTPException(401, "Not logged in")
+    return {"user": sess}
+
+
+@app.post("/auth/logout")
+async def auth_logout():
+    resp = JSONResponse({"ok": True})
+    resp.headers["Set-Cookie"] = auth.clear_cookie_header(
+        secure=os.environ.get("LITREVIEW_DEV_HTTP", "") != "1")
+    return resp
+
+
 @app.post("/api/v1/submit")
 async def submit(request: Request, sub: Submission, background_tasks: BackgroundTasks):
+    sess = auth.read_session(request.cookies.get(auth.COOKIE_NAME, ""))
+    if sess is None:
+        raise HTTPException(401, "Login required — authenticate with GitHub before submitting")
     rate_limited(request.client.host if request.client else "?")
     sid = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
     d = SUBMISSIONS_DIR / sid
     d.mkdir(parents=True, exist_ok=False)
     payload = {
         "sid": sid,
+        "submitted_by": sess,
         "title": sub.title,
         "authors": [a.strip() for a in sub.authors.split(",") if a.strip()],
         "area": sub.area,
