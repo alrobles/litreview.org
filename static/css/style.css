@@ -119,6 +119,16 @@ html.dark .pill-area { background: hsl(160 60% 20%); color: hsl(160 60% 75%); }
 html.dark .pill-ai { background: hsl(265 50% 22%); color: hsl(265 70% 80%); }
 .pill-fmt { background: hsl(190 70% 92%); color: hsl(190 70% 25%); }
 html.dark .pill-fmt { background: hsl(190 60% 18%); color: hsl(190 70% 78%); }
+.pill-impact { background: hsl(45 90% 92%); color: hsl(45 80% 30%); }
+html.dark .pill-impact { background: hsl(45 70% 18%); color: hsl(45 90% 75%); }
+.scr-box { margin-top: .75rem; padding: .6rem .8rem; border: 1px solid var(--border, #ddd); border-radius: 8px; background: var(--code-bg, #f6f8fa); }
+.scr-head { font-size: .9rem; margin-bottom: .25rem; }
+.scr-scores { margin: .25rem 0; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.scr-score strong { font-size: 1.15rem; }
+.tag-warn { background: #fef3c7; color: #92400e; }
+.tag-danger { background: #fee2e2; color: #991b1b; }
+html.dark .tag-warn { background: hsl(38 60% 15%); color: hsl(38 90% 70%); }
+html.dark .tag-danger { background: hsl(0 60% 15%); color: hsl(0 90% 75%); }
 .pill-flag { background: var(--code-bg); color: var(--text-muted); }
 .pill-pending { background: #fef3c7; color: #92400e; }
 .pill-rejected { background: #fee2e2; color: #991b1b; }

@@ -94,7 +94,9 @@ function render(subs) {
       '<p class="small muted" style="margin-top:.75rem">' + escapeHtml((s.abstract || '').slice(0, 400)) + (s.abstract && s.abstract.length > 400 ? '…' : '') + '</p>' +
       (s.keywords && s.keywords.length ? '<div class="small" style="margin-top:.5rem">' + s.keywords.map(function (k) { return '<span class="tag">' + escapeHtml(k) + '</span>'; }).join(' ') + '</div>' : '') +
       '<details class="sub-details"><summary>Show full content (' + ((s.content_len) || '') + ' chars)</summary><div class="sub-body"></div></details>' +
+      '<div class="scr-box" id="scr-' + s.sid + '">' + (s.screening ? renderScreening(s.screening) : '<p class="empty">Screening …</p>') + '</div>' +
       '<div class="sub-actions">' +
+        '<button class="btn btn-sm" onclick="recompute(\'' + s.sid + '\',this)">↻ Re-run screening</button>' +
         '<button class="btn btn-primary btn-sm" onclick="action(\'' + s.sid + '\',\'approve\',this)">✓ Approve & publish</button>' +
         '<button class="btn btn-danger btn-sm" onclick="action(\'' + s.sid + '\',\'reject\',this)">✕ Reject</button>' +
       '</div>';
@@ -110,6 +112,51 @@ function render(subs) {
       }
     });
   });
+}
+
+function renderScreening(s) {
+  const verdict = s.verdict || 'review';
+  const color = verdict === 'ok' ? 'var(--ok,#2e7d32)' : verdict === 'review' ? 'var(--warn,#c77700)' : 'var(--danger,#c62828)';
+  const label = verdict === 'ok' ? 'OK' : verdict === 'review' ? 'REVIEW' : 'BLOCKED';
+  const flags = s.flags || [];
+  const sec = s.security || {};
+  const sq = s.soft_quality || {};
+  const sc = s.score || {};
+  const ii = sc.impact_index || {};
+  const rows = '';
+  let html = '<div class="scr-head"><strong style="color:' + color + '">' + label + '</strong>' +
+    ' <span class="small muted">' +
+    (sec.verdict ? 'security: ' + sec.verdict : '') +
+    (sq.verdict ? ' · soft: ' + sq.verdict : '') +
+    (sc.model ? ' · model: ' + sc.model : '') +
+    '</span></div>';
+  if (sc.status === 'degraded') html += '<p class="empty">LLM unavailable — heuristic screening only.</p>';
+  if (ii.score) html += '<div class="scr-scores"><span class="scr-score">impact <strong>' + ii.score + '</strong>/10</span>' +
+    '<span class="small muted">conf ' + (ii.confidence || '') + '</span>';
+  const s5 = sc.scores || {};
+  html += (s5.originality ? ' <span class="tag">orig ' + s5.originality + '</span>' : '') +
+    (s5.methodological_rigor ? ' <span class="tag">rigor ' + s5.methodological_rigor + '</span>' : '') +
+    (s5.clarity ? ' <span class="tag">clarity ' + s5.clarity + '</span>' : '') +
+    (s5.relevance ? ' <span class="tag">relev ' + s5.relevance + '</span>' : '') +
+    (s5.bibliography ? ' <span class="tag">biblio ' + s5.bibliography + '</span>' : '') +
+    '</div>';
+  if (sc.one_line) html += '<p class="small muted">' + escapeHtml(sc.one_line) + '</p>';
+  const rf = sc.red_flags || [];
+  if (rf.length) html += '<div class="small"><strong>red flags:</strong> ' + rf.map(function (f) { return '<span class="tag tag-warn">' + escapeHtml(f) + '</span>'; }).join(' ') + '</div>';
+  if ((sec.flags || []).length) html += '<div class="small"><strong>security:</strong> ' + sec.flags.map(function (f) { return '<span class="tag tag-danger">' + escapeHtml(f) + '</span>'; }).join(' ') + '</div>';
+  if ((sq.flags || []).length) html += '<div class="small"><strong>soft:</strong> ' + sq.flags.map(function (f) { return '<span class="tag tag-warn">' + escapeHtml(f) + '</span>'; }).join(' ') + '</div>';
+  return html;
+}
+
+function recompute(sid, btn) {
+  btn.disabled = true; btn.textContent = 'Running…';
+  api('/api/v1/admin/screening/' + encodeURIComponent(sid), { method: 'POST' })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (res) {
+      if (res.ok) { renderScreening(res.j.screening); }
+      refresh();
+    })
+    .catch(function () { alert('Network error'); btn.disabled = false; });
 }
 
 function action(sid, kind, btn) {

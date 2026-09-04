@@ -18,6 +18,10 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Literal, Optional
 
+from fastapi import BackgroundTasks
+from app.screening import (run_screening, sanitize_html, security_check,
+                           soft_quality_check, scientific_score)
+
 import markdown as md
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
@@ -167,9 +171,26 @@ def _read_payload(sid: str) -> dict:
     with open(_submission_dir(sid) / "payload.json") as f:
         return json.load(f)
 
+
+def _read_screening(sid: str) -> Optional[dict]:
+    f = _submission_dir(sid) / "screening.json"
+    if not f.exists():
+        return None
+    return json.loads(f.read_text())
+
+
+def _reject_auto(sid: str, reason: str):
+    p = _read_payload(sid)
+    p["status"] = "rejected"
+    p["rejected_at"] = datetime.now(timezone.utc).isoformat()
+    p["rejected_auto"] = True
+    p["reject_reason"] = reason
+    (SUBMISSIONS_DIR / sid / "payload.json").write_text(
+        json.dumps(p, indent=2, ensure_ascii=False))
+
 # ---------- public API ----------
 @app.post("/api/v1/submit")
-async def submit(request: Request, sub: Submission):
+async def submit(request: Request, sub: Submission, background_tasks: BackgroundTasks):
     rate_limited(request.client.host if request.client else "?")
     sid = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
     d = SUBMISSIONS_DIR / sid
@@ -191,6 +212,7 @@ async def submit(request: Request, sub: Submission):
     }
     (d / "payload.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False))
     (d / ("content.tex" if sub.format == "latex" else "content.md")).write_text(sub.content)
+    background_tasks.add_task(run_screening, sid, ROOT)
     return {"ok": True, "sid": sid, "message": "Review submitted. It will appear after moderation."}
 
 # ---------- admin API ----------
@@ -213,6 +235,15 @@ async def list_submissions(x_admin_token: Optional[str] = Header(None)):
         except Exception:
             continue
         p.pop("content", None)
+        scr = _read_screening(p["sid"])
+        if scr is not None:
+            p["screening"] = {
+                "verdict": scr.get("overall", "review"),
+                "security": scr.get("security"),
+                "soft_quality": scr.get("soft_quality"),
+                "score": scr.get("score"),
+                "flags": scr.get("overall"),
+            }
         out.append(p)
     return {"submissions": out}
 
@@ -227,6 +258,18 @@ async def submission_content(sid: str, x_admin_token: Optional[str] = Header(Non
         raise HTTPException(404, "No content")
     return Response(f.read_text(), media_type="text/plain")
 
+@app.post("/api/v1/admin/screening/{sid}")
+async def rerun_screening(sid: str, x_admin_token: Optional[str] = Header(None)):
+    check_admin(x_admin_token)
+    if not re.fullmatch(r"[\w-]+", sid):
+        raise HTTPException(400, "Bad sid")
+    p = _read_payload(sid)
+    if p.get("status") != "pending":
+        raise HTTPException(409, f"Submission is {p.get('status')}")
+    result = run_screening(sid, ROOT)
+    return {"ok": True, "screening": result}
+
+
 @app.post("/api/v1/admin/approve/{sid}")
 async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
     check_admin(x_admin_token)
@@ -235,6 +278,18 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
     p = _read_payload(sid)
     if p.get("status") != "pending":
         raise HTTPException(409, f"Submission is {p.get('status')}")
+
+    # screening gate: never approve something that fails security or high-conf spam
+    scr = _read_screening(sid)
+    if scr is None:
+        # screening may still be running; surface it, don't block permanently
+        raise HTTPException(409, "Screening still running — try again in a few seconds.")
+    overall = scr.get("overall")
+    if overall == "reject_blocked_security":
+        raise HTTPException(400, "Blocked: submission failed the security check (" +
+                            ", ".join(scr["security"]["flags"]) + ").")
+    if overall == "reject_blocked_spam":
+        raise HTTPException(400, "Blocked: submission flagged as spam with high confidence.")
 
     data = _load_data()
     rid = _next_id(data)
@@ -250,6 +305,15 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
         "abstract": p["abstract"],
         "keywords": p["keywords"],
         "ai_assist": p.get("ai_assist", ""),
+        "impact_index": scr.get("score", {}).get("impact_index", {}),
+        "score_model": scr.get("score", {}).get("model", ""),
+        "screening": {
+            "verdict": scr.get("overall", "ok"),
+            "security": scr.get("security", {}).get("verdict", "ok"),
+            "soft_quality": scr.get("soft_quality", {}).get("scores", {}),
+            "red_flags": scr.get("score", {}).get("red_flags", []),
+            "one_line": scr.get("score", {}).get("one_line", ""),
+        },
         "date": date.today().isoformat(),
         "status": "published",
         "reviewed_by": {"name": p["contact_name"], "email": p["contact_email"]},
@@ -272,7 +336,7 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
     else:
         (papers_dir / "main.md").write_text(p["content"])
         body_html = _markdown_to_html(p["content"])
-    html = _render_review_page(entry, body_html, fmt)
+    html = _render_review_page(entry, sanitize_html(body_html), fmt)
     (papers_dir / "index.html").write_text(html)
 
     _save_data(data)

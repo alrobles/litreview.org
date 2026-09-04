@@ -3,3 +3,4 @@ uvicorn[standard]==0.34.0
 markdown==3.7
 markupsafe==2.1.5
 pydantic[email]==2.10.4
+nh3==0.2.18
