@@ -251,7 +251,7 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
 }
 .hero h1 {
   font-family: var(--font-serif);
-  font-size: clamp(2.25rem, 5.75vw, 4.83rem);
+  font-size: clamp(1.9rem, 4.6vw, 3.9rem);
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: -0.025em;
