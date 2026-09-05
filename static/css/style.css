@@ -556,3 +556,7 @@ details.sub-details summary { cursor: pointer; color: var(--text-muted); font-si
     transform: none !important;
   }
 }
+/* Login buttons (GitHub/ORCID logos) — preserved from public tree */
+.btn-login { display: inline-flex; align-items: center; gap: .5rem; }
+.login-icon { width: 1rem; height: 1rem; flex: none; vertical-align: middle; }
+html.dark .login-icon[src$="github-mark.svg"] { filter: brightness(0) invert(1); }
