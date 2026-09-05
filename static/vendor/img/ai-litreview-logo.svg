@@ -1,20 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 150" width="520" height="150" role="img" aria-label="AI LitReview">
-  <!-- AI Spark Glyph + LitReview wordmark, tightly cropped -->
-  <g stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path d="M95 45 L65 125" />
-    <path d="M95 45 L115 125" />
-    <path d="M80 88 L105 88" />
-    <path d="M125 45 L125 125" />
-    <path d="M115 45 L135 45" />
-    <path d="M115 125 L135 125" />
-    <path d="M100 25 L100 45" />
-    <path d="M100 125 L100 148" />
-    <path d="M58 82 L78 82" />
-    <path d="M142 82 L162 82" />
-    <path d="M80 62 L90 72" />
-    <path d="M125 62 L116 72" />
-    <path d="M80 130 L90 121" />
-    <path d="M125 130 L116 121" />
-  </g>
-  <text x="195" y="85" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="78" fill="currentColor" dominant-baseline="middle" letter-spacing="1.5">LitReview</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" width="500" height="120" role="img" aria-label="AI LitReview">
+  <!-- Sobrio y equilibrado: AI ligero (sans 300) + LitReview serif, centrados -->
+  <text x="78" y="62" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-weight="300" font-size="34" fill="currentColor" dominant-baseline="middle" letter-spacing="4">AI</text>
+  <text x="174" y="62" font-family="Georgia, 'Times New Roman', serif"
+        font-weight="500" font-size="58" fill="currentColor" dominant-baseline="middle" letter-spacing="0.4">LitReview</text>
 </svg>

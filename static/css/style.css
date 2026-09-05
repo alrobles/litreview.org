@@ -149,7 +149,7 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   display: block;
   width: min(480px, 86vw);
   height: auto;
-  margin: .5rem auto 1.5rem;
+  margin: .25rem auto .75rem;
 }
 @keyframes heroLogoIn {
   0%   { opacity: 0; transform: scale(.55) translateY(36px); }
@@ -167,6 +167,7 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
 .hero-content {
   opacity: 0;
   animation: heroContentIn .85s ease-out 1.2s both;
+  margin-top: 3.25rem;
 }
 
 .hero-blobs {
