@@ -22,7 +22,7 @@
 <header class="hero">
   <div class="hero-blobs" aria-hidden="true"><span></span><span></span><span></span></div>
   <p class="domain">litreview.org</p>
-  <h1>Literature reviews written by scientists,<br>with AI as a writing partner</h1>
+  <h1 class="reveal-title">Literature reviews written by scientists,<br>with AI as a writing partner</h1>
   <p>Every review here is written and owned by a human scientist. Agentic AI is used openly as a drafting, synthesis, and fact-checking partner — it is declared on every review, never hidden, never a disqualifier.</p>
   <div class="hero-actions">
     <a href="/browse.html" class="btn btn-primary">Browse reviews</a>
@@ -31,7 +31,7 @@
 </header>
 
 <main class="container">
-  <section>
+  <section class="scroll-animate">
     <div class="row-between" style="align-items:center; margin-bottom:1.5rem">
       <h2 class="section-title" style="margin:0">Recent submissions</h2>
       <a href="/browse.html" class="small">View all →</a>
@@ -39,19 +39,19 @@
     <div id="recent-listings" class="stack"></div>
   </section>
 
-  <section class="spaced">
+  <section class="spaced scroll-animate">
     <div class="grid-3">
-      <div class="feature-card">
+      <div class="feature-card scroll-animate">
         <span class="feature-icon" aria-hidden="true">✍️</span>
         <h3>Expert-written, AI-assisted</h3>
         <p class="small muted">Reviews are written and submitted by scientists, with AI as a drafting, synthesis, and fact-checking aid. Authors own their text.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card scroll-animate">
         <span class="feature-icon" aria-hidden="true">📄</span>
         <h3>Open formats</h3>
         <p class="small muted">Every review ships as rendered HTML and plain Markdown source — free to read, download, and reuse.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card scroll-animate">
         <span class="feature-icon" aria-hidden="true">🔬</span>
         <h3>Organized by area</h3>
         <p class="small muted">Starting with Ecology &amp; Evolution and Computer Science. More basic sciences coming soon.</p>
@@ -70,10 +70,11 @@
 <script>
 loadData().then(function (data) {
   const list = document.getElementById('recent-listings');
-  data.reviews.filter(function (r) { return r.status !== 'hidden'; }).slice(0, 3).forEach(function (r) {
+  data.reviews.filter(function (r) { return r.status !== 'hidden'; }).slice(0, 3).forEach(function (r, i) {
     const a = document.createElement('a');
     a.href = '/abs.html?id=' + encodeURIComponent(r.id);
-    a.className = 'card';
+    a.className = 'card scroll-animate';
+    a.style.transitionDelay = (i * 0.08) + 's';
     a.innerHTML =
       '<div class="row-between">' +
         '<div>' +
@@ -85,6 +86,7 @@ loadData().then(function (data) {
         '<span class="pill pill-area">' + escapeHtml(areaName(data.areas, r.area)) + '</span>' +
       '</div>';
     list.appendChild(a);
+    if (window.observeScrollAnimate) observeScrollAnimate(a);
   });
 }).catch(function () {
   document.getElementById('recent-listings').innerHTML = '<p class="empty">Could not load reviews.</p>';
