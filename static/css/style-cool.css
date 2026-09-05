@@ -329,8 +329,8 @@ html.dark a.card:hover { box-shadow: 0 14px 32px rgba(0,0,0,.25); }
   letter-spacing: .01em;
   white-space: nowrap;
 }
-.pill-area { background: rgba(37,99,235, .10); color: #1e40af; }
-html.dark .pill-area { background: rgba(96,165,250, .12); color: #93c5fd; }
+.pill-area { background: transparent; color: var(--text-muted); padding: 0; border-radius: 0; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+html.dark .pill-area { background: transparent; color: var(--text-faint); }
 .pill-ai { background: rgba(124,58,217, .10); color: #5b21b6; }
 html.dark .pill-ai { background: rgba(124,58,217, .15); color: #c4b5fd; }
 .pill-fmt { background: rgba(6,182,212, .10); color: #0e7490; }
