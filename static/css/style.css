@@ -82,7 +82,13 @@ a:hover { text-decoration: underline; }
   color: var(--text);
   letter-spacing: -0.02em;
 }
-.nav-brand span { color: var(--accent-teal); }
+.nav-brand img.brand-logo {
+  height: 1.9rem;
+  width: auto;
+  display: block;
+  margin: 0;
+  vertical-align: middle;
+}
 .nav-links {
   display: flex;
   gap: .5rem;
