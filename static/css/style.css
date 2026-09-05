@@ -147,33 +147,37 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
 /* Hero: AI LitReview logo foreground entrance, content follows */
 .hero-logo {
   display: block;
-  width: min(480px, 86vw);
+  width: min(640px, 92vw);
   height: auto;
+  position: relative;
+  z-index: 1;
   margin: .25rem auto .75rem;
 }
 @keyframes heroLogoIn {
-  0%   { opacity: 0; transform: scale(.55) translateY(36px); }
-  55%  { opacity: 1; transform: scale(1.12) translateY(-6px); }
+  0%   { opacity: 0; transform: scale(.55) translateY(48px); }
+  50%  { opacity: 1; transform: scale(1.10) translateY(-8px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 .hero-logo {
   opacity: 0;
-  animation: heroLogoIn 1.15s cubic-bezier(.2,.75,.3,1) forwards;
+  animation: heroLogoIn 2s cubic-bezier(.2,.75,.3,1) forwards;
 }
 @keyframes heroContentIn {
   from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .hero-content {
+  position: relative;
+  z-index: 1;
   opacity: 0;
-  animation: heroContentIn .85s ease-out 1.2s both;
+  animation: heroContentIn 1s ease-out 2.3s both;
   margin-top: 4.5rem;
 }
 
 .hero-blobs {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
 }
 .hero-blobs span {
@@ -225,7 +229,7 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   content: "";
   position: absolute;
   inset: -20%;
-  z-index: -2;
+  z-index: 0;
   pointer-events: none;
   background:
     radial-gradient(circle at 30% 30%, var(--blob-1) 0%, transparent 50%),
