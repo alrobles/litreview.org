@@ -55,7 +55,7 @@ body {
   flex-direction: column;
   transition: background .25s ease, color .25s ease;
   line-height: 1.6;
-  cursor: url('/static/images/cursor.svg') 16 2, auto;
+  cursor: url('/static/images/cursor.svg') 7 7, auto;
 }
 
 a { color: var(--accent-teal); text-decoration: none; }
