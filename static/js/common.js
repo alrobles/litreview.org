@@ -86,4 +86,50 @@
     if (inCode) html += '</code></pre>';
     return html;
   };
+
+  /* reveal titles on load: split by <br> and animate each line up */
+  function initRevealTitles() {
+    document.querySelectorAll('.reveal-title').forEach(function (el) {
+      var parts = el.innerHTML.split(/\s*<br\s*\/?>\s*/gi);
+      el.innerHTML = parts.map(function (line) {
+        return '<span class="reveal-line"><span class="reveal-text">' + (line || '&nbsp;') + '</span></span>';
+      }).join('');
+      requestAnimationFrame(function () {
+        el.classList.add('is-visible');
+      });
+    });
+  }
+
+  /* scroll-triggered fade-in animations */
+  var scrollObserver;
+  function observeScrollAnimate(el) {
+    if (!el || el.classList.contains('scroll-observed')) return;
+    el.classList.add('scroll-observed');
+    if (!scrollObserver) {
+      scrollObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            scrollObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    }
+    scrollObserver.observe(el);
+  }
+  window.observeScrollAnimate = observeScrollAnimate;
+
+  function initScrollAnimations() {
+    document.querySelectorAll('.scroll-animate').forEach(observeScrollAnimate);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      initRevealTitles();
+      initScrollAnimations();
+    });
+  } else {
+    initRevealTitles();
+    initScrollAnimations();
+  }
 })();
