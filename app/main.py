@@ -245,6 +245,12 @@ async def auth_orcid_callback(code: str = "", state: str = ""):
     return resp
 
 
+@app.get("/auth/providers")
+async def auth_providers():
+    """Which OAuth providers are configured (public, no redirect)."""
+    return {"github": auth.oauth_configured(), "orcid": auth.orcid_configured()}
+
+
 @app.get("/auth/me")
 async def auth_me(request: Request):
     sess = auth.read_session(request.cookies.get(auth.COOKIE_NAME, ""))
