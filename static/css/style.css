@@ -4,43 +4,43 @@
   --font-serif: ui-serif, Georgia, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
-  --accent-teal: #e8735c;
-  --accent-sky: #f59e0b;
-  --accent-lime: #f5d0a9;
-  --accent-amber: #f97316;
-  --accent-purple: #c2597b;
+  --accent-teal: #2563eb;
+  --accent-sky: #06b6d4;
+  --accent-lime: #22d3ee;
+  --accent-amber: #38bdf8;
+  --accent-purple: #7c3aed;
 
-  --bg: #fffaf5;
-  --bg-hero: #fff2e6;
+  --bg: #f8fafc;
+  --bg-hero: #f1f5f9;
   --bg-card: #ffffff;
-  --bg-nav: rgba(255, 250, 245, 0.82);
-  --bg-code: #fff1e6;
+  --bg-nav: rgba(248, 250, 252, 0.82);
+  --bg-code: #f0f9ff;
 
-  --text: #1f1a17;
-  --text-muted: #8a7e72;
-  --text-faint: #b8afa4;
-  --border: #f0e6db;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --border: #e2e8f0;
 
-  --blob-1: rgba(255,160,122, 0.45);
-  --blob-2: rgba(245,158,11, 0.45);
-  --blob-3: rgba(245,208,169, 0.32);
+  --blob-1: rgba(96,165,250, 0.45);
+  --blob-2: rgba(6,182,212, 0.45);
+  --blob-3: rgba(34,211,238, 0.32);
 }
 
 html.dark {
-  --bg: #1c1410;
-  --bg-hero: #211a15;
-  --bg-card: #261e18;
-  --bg-nav: rgba(28, 20, 16, 0.82);
-  --bg-code: #2b211a;
+  --bg: #0f172a;
+  --bg-hero: #1e293b;
+  --bg-card: #1e293b;
+  --bg-nav: rgba(15, 23, 42, 0.82);
+  --bg-code: #1e293b;
 
-  --text: #fff7ed;
-  --text-muted: #b8afa4;
-  --text-faint: #a89f94;
-  --border: #3d3026;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --border: #334155;
 
-  --blob-1: rgba(232,115,92, 0.35);
-  --blob-2: rgba(245,158,11, 0.30);
-  --blob-3: rgba(245,208,169, 0.20);
+  --blob-1: rgba(37,99,235, 0.35);
+  --blob-2: rgba(6,182,212, 0.30);
+  --blob-3: rgba(34,211,238, 0.20);
 }
 
 * { box-sizing: border-box; }
@@ -265,11 +265,11 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-teal), var(--accent-sky));
   color: #fff;
-  box-shadow: 0 6px 22px rgba(232,115,92, .28);
+  box-shadow: 0 6px 22px rgba(37,99,235, .28);
 }
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(232,115,92, .38);
+  box-shadow: 0 10px 30px rgba(37,99,235, .38);
 }
 .btn-outline {
   border-color: var(--border);
@@ -329,17 +329,17 @@ html.dark a.card:hover { box-shadow: 0 14px 32px rgba(0,0,0,.25); }
   letter-spacing: .01em;
   white-space: nowrap;
 }
-.pill-area { background: rgba(232,115,92, .10); color: #9c4221; }
-html.dark .pill-area { background: rgba(255,160,122, .12); color: #fdba74; }
-.pill-ai { background: rgba(194,89,123, .10); color: #9c2e4b; }
-html.dark .pill-ai { background: rgba(194,89,123, .15); color: #f9a8d4; }
-.pill-fmt { background: rgba(245,158,11, .10); color: #92400e; }
-html.dark .pill-fmt { background: rgba(245,158,11, .15); color: #fbbf24; }
-.pill-impact { background: rgba(249,115,22, .15); color: #9a3412; }
-html.dark .pill-impact { background: rgba(249,115,22, .15); color: #f97316; }
-.pill-pending { background: rgba(249,115,22, .15); color: #9a3412; }
+.pill-area { background: rgba(37,99,235, .10); color: #1e40af; }
+html.dark .pill-area { background: rgba(96,165,250, .12); color: #93c5fd; }
+.pill-ai { background: rgba(124,58,217, .10); color: #5b21b6; }
+html.dark .pill-ai { background: rgba(124,58,217, .15); color: #c4b5fd; }
+.pill-fmt { background: rgba(6,182,212, .10); color: #0e7490; }
+html.dark .pill-fmt { background: rgba(6,182,212, .15); color: #67e8f9; }
+.pill-impact { background: rgba(56,189,248, .15); color: #075985; }
+html.dark .pill-impact { background: rgba(56,189,248, .15); color: #38bdf8; }
+.pill-pending { background: rgba(56,189,248, .15); color: #075985; }
 .pill-rejected { background: rgba(220, 38, 38, .12); color: #991b1b; }
-html.dark .pill-pending { background: rgba(249,115,22, .12); color: #f97316; }
+html.dark .pill-pending { background: rgba(56,189,248, .12); color: #38bdf8; }
 html.dark .pill-rejected { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 
 .tag {
@@ -350,9 +350,9 @@ html.dark .pill-rejected { background: rgba(220, 38, 38, .12); color: #fca5a5; }
   background: var(--bg-code);
   color: var(--text-muted);
 }
-.tag-warn { background: #ffedd5; color: #9a3412; }
+.tag-warn { background: #e0f2fe; color: #075985; }
 .tag-danger { background: #fee2e2; color: #991b1b; }
-html.dark .tag-warn { background: rgba(249,115,22, .12); color: #f97316; }
+html.dark .tag-warn { background: rgba(56,189,248, .12); color: #38bdf8; }
 html.dark .tag-danger { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 
 /* ---------- Feature / area cards ---------- */
@@ -401,7 +401,7 @@ html.dark .tag-danger { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 .count-line { font-size: .875rem; color: var(--text-faint); margin-bottom: 1.25rem; }
 .empty { color: var(--text-faint); text-align: center; padding: 3rem 0; }
 .flash { animation: flash 1.6s ease-out; }
-@keyframes flash { 0% { background: rgba(232,115,92, .15); } 100% { background: transparent; } }
+@keyframes flash { 0% { background: rgba(37,99,235, .15); } 100% { background: transparent; } }
 
 /* ---------- Prose ---------- */
 .prose p { margin: .85rem 0; line-height: 1.7; }
@@ -442,13 +442,13 @@ textarea { resize: vertical; }
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--accent-teal);
-  box-shadow: 0 0 0 3px rgba(232,115,92, .12);
+  box-shadow: 0 0 0 3px rgba(37,99,235, .12);
 }
 .hint { font-size: .8rem; color: var(--text-faint); margin-top: .35rem; line-height: 1.5; }
 .form-status { margin-top: 1rem; padding: .85rem 1rem; border-radius: .65rem; display: none; }
-.form-status.ok { display: block; background: rgba(232,115,92, .12); color: #9c4221; }
+.form-status.ok { display: block; background: rgba(37,99,235, .12); color: #1e40af; }
 .form-status.err { display: block; background: rgba(220, 38, 38, .10); color: #991b1b; }
-html.dark .form-status.ok { background: rgba(232,115,92, .12); color: #fdba74; }
+html.dark .form-status.ok { background: rgba(37,99,235, .12); color: #93c5fd; }
 html.dark .form-status.err { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 .preview-pane { border: 1px dashed var(--border); border-radius: .65rem; padding: 1.25rem; min-height: 8rem; background: var(--bg-card); }
 
