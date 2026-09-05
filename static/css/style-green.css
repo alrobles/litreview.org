@@ -4,43 +4,43 @@
   --font-serif: ui-serif, Georgia, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
-  --accent-teal: #15803d;
-  --accent-sky: #22c55e;
-  --accent-lime: #84cc16;
-  --accent-amber: #10b981;
-  --accent-purple: #059669;
+  --accent-teal: #2d6a4f;
+  --accent-sky: #4a9a9a;
+  --accent-lime: #d4c57a;
+  --accent-amber: #d49a5c;
+  --accent-purple: #8a7aa8;
 
-  --bg: #f6fbf4;
-  --bg-hero: #eef7ec;
+  --bg: #f7faf6;
+  --bg-hero: #eff6ed;
   --bg-card: #ffffff;
-  --bg-nav: rgba(246, 251, 244, 0.82);
-  --bg-code: #eefdf4;
+  --bg-nav: rgba(247, 250, 246, 0.82);
+  --bg-code: #eef6ec;
 
-  --text: #0f291e;
-  --text-muted: #5d766b;
-  --text-faint: #8aa89a;
-  --border: #d2e7d8;
+  --text: #172820;
+  --text-muted: #5a7266;
+  --text-faint: #8aa898;
+  --border: #d8e6d7;
 
-  --blob-1: rgba(34,197,94, 0.45);
-  --blob-2: rgba(16,185,129, 0.45);
-  --blob-3: rgba(132,204,22, 0.32);
+  --blob-1: rgba(45,106,79, 0.45);
+  --blob-2: rgba(212,154,92, 0.38);
+  --blob-3: rgba(138,122,168, 0.30);
 }
 
 html.dark {
-  --bg: #0b1f17;
-  --bg-hero: #102923;
-  --bg-card: #102923;
-  --bg-nav: rgba(11, 31, 23, 0.82);
-  --bg-code: #0f291e;
+  --bg: #0f1c17;
+  --bg-hero: #152923;
+  --bg-card: #152923;
+  --bg-nav: rgba(15, 28, 23, 0.82);
+  --bg-code: #12211b;
 
-  --text: #f6fbf4;
-  --text-muted: #8aa89a;
-  --text-faint: #5d766b;
-  --border: #23523e;
+  --text: #f0f7f3;
+  --text-muted: #8aa898;
+  --text-faint: #5a7266;
+  --border: #264238;
 
-  --blob-1: rgba(21,128,61, 0.35);
-  --blob-2: rgba(16,185,129, 0.30);
-  --blob-3: rgba(132,204,22, 0.20);
+  --blob-1: rgba(45,106,79, 0.30);
+  --blob-2: rgba(212,154,92, 0.25);
+  --blob-3: rgba(138,122,168, 0.20);
 }
 
 * { box-sizing: border-box; }
@@ -265,11 +265,11 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-teal), var(--accent-sky));
   color: #fff;
-  box-shadow: 0 6px 22px rgba(34,197,94, .28);
+  box-shadow: 0 6px 22px rgba(45,106,79, .28);
 }
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(34,197,94, .38);
+  box-shadow: 0 10px 30px rgba(45,106,79, .38);
 }
 .btn-outline {
   border-color: var(--border);
@@ -331,15 +331,15 @@ html.dark a.card:hover { box-shadow: 0 14px 32px rgba(0,0,0,.25); }
 }
 .pill-area { background: transparent; color: var(--text-muted); padding: 0; border-radius: 0; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
 html.dark .pill-area { background: transparent; color: var(--text-faint); }
-.pill-ai { background: rgba(5,150,105, .10); color: #064e3b; }
-html.dark .pill-ai { background: rgba(52,211,153, .15); color: #6ee7b7; }
-.pill-fmt { background: rgba(101,163,13, .10); color: #3f6212; }
-html.dark .pill-fmt { background: rgba(163,230,53, .15); color: #a3e635; }
-.pill-impact { background: rgba(21,128,61, .15); color: #14532d; }
-html.dark .pill-impact { background: rgba(21,128,61, .15); color: #4ade80; }
-.pill-pending { background: rgba(21,128,61, .15); color: #14532d; }
+.pill-ai { background: rgba(74,154,154, .10); color: #143d2b; }
+html.dark .pill-ai { background: rgba(74,154,154, .15); color: #9ee8d9; }
+.pill-fmt { background: rgba(212,154,92, .10); color: #7a3d0f; }
+html.dark .pill-fmt { background: rgba(212,154,92, .15); color: #f4c89a; }
+.pill-impact { background: rgba(138,122,168, .15); color: #3e2d55; }
+html.dark .pill-impact { background: rgba(138,122,168, .15); color: #c4b5e0; }
+.pill-pending { background: rgba(138,122,168, .15); color: #3e2d55; }
 .pill-rejected { background: rgba(220, 38, 38, .12); color: #991b1b; }
-html.dark .pill-pending { background: rgba(34,197,94, .12); color: #4ade80; }
+html.dark .pill-pending { background: rgba(138,122,168, .12); color: #c4b5e0; }
 html.dark .pill-rejected { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 
 .tag {
@@ -350,9 +350,9 @@ html.dark .pill-rejected { background: rgba(220, 38, 38, .12); color: #fca5a5; }
   background: var(--bg-code);
   color: var(--text-muted);
 }
-.tag-warn { background: #dcfce7; color: #14532d; }
+.tag-warn { background: #f0e6d2; color: #7a3d0f; }
 .tag-danger { background: #fee2e2; color: #991b1b; }
-html.dark .tag-warn { background: rgba(34,197,94, .12); color: #4ade80; }
+html.dark .tag-warn { background: rgba(212,154,92, .12); color: #f4c89a; }
 html.dark .tag-danger { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 
 /* ---------- Feature / area cards ---------- */
@@ -401,7 +401,7 @@ html.dark .tag-danger { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 .count-line { font-size: .875rem; color: var(--text-faint); margin-bottom: 1.25rem; }
 .empty { color: var(--text-faint); text-align: center; padding: 3rem 0; }
 .flash { animation: flash 1.6s ease-out; }
-@keyframes flash { 0% { background: rgba(34,197,94, .15); } 100% { background: transparent; } }
+@keyframes flash { 0% { background: rgba(45,106,79, .15); } 100% { background: transparent; } }
 
 /* ---------- Prose ---------- */
 .prose p { margin: .85rem 0; line-height: 1.7; }
@@ -442,13 +442,13 @@ textarea { resize: vertical; }
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--accent-teal);
-  box-shadow: 0 0 0 3px rgba(34,197,94, .12);
+  box-shadow: 0 0 0 3px rgba(45,106,79, .12);
 }
 .hint { font-size: .8rem; color: var(--text-faint); margin-top: .35rem; line-height: 1.5; }
 .form-status { margin-top: 1rem; padding: .85rem 1rem; border-radius: .65rem; display: none; }
-.form-status.ok { display: block; background: rgba(34,197,94, .12); color: #14532d; }
+.form-status.ok { display: block; background: rgba(45,106,79, .12); color: #143d2b; }
 .form-status.err { display: block; background: rgba(220, 38, 38, .10); color: #991b1b; }
-html.dark .form-status.ok { background: rgba(34,197,94, .12); color: #86efac; }
+html.dark .form-status.ok { background: rgba(74,154,154, .12); color: #9ee8d9; }
 html.dark .form-status.err { background: rgba(220, 38, 38, .12); color: #fca5a5; }
 .preview-pane { border: 1px dashed var(--border); border-radius: .65rem; padding: 1.25rem; min-height: 8rem; background: var(--bg-card); }
 
