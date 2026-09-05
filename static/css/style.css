@@ -147,7 +147,7 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
 /* Hero: AI LitReview logo foreground entrance, content follows */
 .hero-logo {
   display: block;
-  width: min(640px, 92vw);
+  width: min(720px, 94vw);
   height: auto;
   position: relative;
   z-index: 1;
