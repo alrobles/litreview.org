@@ -311,7 +311,9 @@ html.dark a.card:hover { box-shadow: 0 14px 32px rgba(0,0,0,.25); }
 .card .auth { font-size: .9rem; color: var(--text-muted); margin-top: .35rem; }
 .card .abs { font-size: .9rem; color: var(--text-muted); margin-top: .65rem; line-height: 1.55; }
 .stack { display: flex; flex-direction: column; gap: 1rem; }
-.row-between { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.row-between { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.row-between > * { min-width: 0; }
+.row-between > :first-child { flex: 1 1 0; }
 
 /* ---------- Badges, pills ---------- */
 .pill {
