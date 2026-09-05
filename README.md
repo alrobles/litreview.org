@@ -118,32 +118,39 @@ never replace it.
 
 ## OAuth — digital responsibility signature (v5)
 
-Submitting a review requires **GitHub OAuth**. The login is a digital
-signature: the submitter's verified GitHub identity is stored in the
-submission (`submitted_by`) and shown to the moderator, making every
-submission accountable. It proves control of a GitHub account — not humanness
+Submitting a review requires **identity verification** (GitHub or ORCID). The
+login is a digital signature: the submitter's verified identity is stored in
+the submission (`submitted_by`) and shown to the moderator, making every
+submission accountable. It proves control of an identity — not humanness
 (a human-verification survey can be layered on later).
 
-- **App**: a DEDICATED GitHub OAuth App for litreview.org, deliberately
-  isolated from the agenticplug/ecoseek app — a login here grants nothing on
-  ecoseek.org or agenticplug, and vice versa.
+- **Providers**:
+  - **GitHub** — DEDICATED OAuth App for litreview.org, deliberately isolated
+    from the agenticplug/ecoseek app.
+  - **ORCID** — standard ORCID public API (`/authenticate` scope, iD + name +
+    best-effort public email). Ideal for the scientific-journal trajectory;
+    ORCID iDs travel with the author's publication record.
 - **Flow** (in `app/auth.py`, stateless signed-cookie sessions):
-  `GET /auth/login` → GitHub authorize → `GET /auth/github/callback` →
-  HMAC-signed httpOnly cookie (`litreview_session`, 7d) → `GET /auth/me` /
-  `POST /auth/logout`. OAuth `state` is single-use in-memory (CSRF).
+  `GET /auth/login` or `/auth/orcid/login` → provider authorize →
+  `GET /auth/github/callback` or `/auth/orcid/callback` → HMAC-signed httpOnly
+  cookie (`litreview_session`, 7d) → `GET /auth/me` / `POST /auth/logout`.
+  OAuth `state` is single-use in-memory (CSRF).
 - **Gate**: `POST /api/v1/submit` returns 401 without a valid session;
-  `payload.json` records `submitted_by` (login, id, name, verified_at).
-- **Env**: `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET` (host file
-  `~/env/litreview-oauth-credentials`), `LITREVIEW_SESSION_SECRET` (host file
+  `payload.json` records `submitted_by` (login, id, name, provider,
+  verified_at).
+- **Env**: `GITHUB_OAUTH_CLIENT_ID/_SECRET` (host file
+  `~/env/litreview-oauth-credentials`), `ORCID_CLIENT_ID/_SECRET` (host file
+  `~/env/litreview-orcid-credentials`), `LITREVIEW_SESSION_SECRET` (host file
   `~/env/litreview-session-secret`), `LITREVIEW_BASE_URL=https://litreview.org`.
-- nginx proxies `/auth/` to uvicorn. Without the app configured, `/auth/login`
-  returns 503 and submit stays available for the moderator (who has the admin
-  token) — but public submissions require login.
+- nginx proxies `/auth/` to uvicorn (nginx.conf is bind-mounted into the
+  container). Without a provider configured, its `/auth/*` returns 503
+  (graceful); the submit gate still requires SOME session.
 
-Create the app at `https://github.com/settings/developers` → OAuth Apps:
-name `litreview.org`, homepage `https://litreview.org`, callback
-`https://litreview.org/auth/github/callback` (also add `http://localhost:8670`
-for local testing).
+Create the GitHub app at `https://github.com/settings/developers` → OAuth Apps
+(name `litreview.org`, callback `https://litreview.org/auth/github/callback`).
+Register ORCID public API credentials at
+`https://info.orcid.org/register-client-application/` (redirect
+`https://litreview.org/auth/orcid/callback`).
 
 ## License & caveat
 

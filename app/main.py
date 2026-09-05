@@ -218,6 +218,33 @@ async def auth_callback(code: str = "", state: str = ""):
     return resp
 
 
+@app.get("/auth/orcid/login")
+async def auth_orcid_login(return_to: str = "/submit.html"):
+    if not auth.orcid_configured():
+        raise HTTPException(503, "ORCID OAuth is not configured on this server")
+    state = auth.put_state(return_to)
+    return RedirectResponse(auth.build_orcid_authorize_url(state))
+
+
+@app.get("/auth/orcid/callback")
+async def auth_orcid_callback(code: str = "", state: str = ""):
+    if not auth.orcid_configured():
+        raise HTTPException(503, "ORCID OAuth is not configured on this server")
+    if not code or not state:
+        raise HTTPException(400, "Missing code or state")
+    return_to = auth.take_state(state)
+    if return_to is None:
+        raise HTTPException(400, "Invalid or expired state")
+    user = auth.exchange_orcid_code(code)
+    if user is None:
+        raise HTTPException(502, "ORCID OAuth exchange failed")
+    cookie = auth.mint_session(user)
+    resp = RedirectResponse(return_to or "/submit.html")
+    resp.headers["Set-Cookie"] = auth.session_cookie_header(
+        cookie, secure=os.environ.get("LITREVIEW_DEV_HTTP", "") != "1")
+    return resp
+
+
 @app.get("/auth/me")
 async def auth_me(request: Request):
     sess = auth.read_session(request.cookies.get(auth.COOKIE_NAME, ""))

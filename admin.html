@@ -87,7 +87,7 @@ function render(subs) {
         '<div><div class="meta-sm">' + escapeHtml(s.sid) + ' · ' + escapeHtml(s.received_at ? s.received_at.replace('T',' ').slice(0,16) : '') + ' · ' + escapeHtml(s.area) + ' · ' + escapeHtml(s.format || 'markdown').toUpperCase() + '</div>' +
         '<div class="title" style="font-weight:600;font-size:1.05rem;margin-top:.25rem">' + escapeHtml(s.title) + '</div>' +
         '<div class="muted small">' + escapeHtml((s.authors || []).join(', ')) + '</div>' +
-        (s.submitted_by && s.submitted_by.login ? '<div class="small" style="margin-top:.25rem">✍️ submitted by <strong>' + escapeHtml(s.submitted_by.login) + '</strong>' + (s.submitted_by.name ? ' (' + escapeHtml(s.submitted_by.name) + ')' : '') + ' <span class="faint">github verified</span></div>' : '') +
+        (s.submitted_by && s.submitted_by.login ? '<div class="small" style="margin-top:.25rem">✍️ submitted by <strong>' + escapeHtml(s.submitted_by.login.split(':').pop()) + '</strong>' + (s.submitted_by.name ? ' (' + escapeHtml(s.submitted_by.name) + ')' : '') + ' <span class="faint">' + escapeHtml(s.submitted_by.provider || 'github') + ' verified</span></div>' : '') +
         '<div class="muted small">' + escapeHtml(s.contact_name) + ' &lt;' + escapeHtml(s.contact_email) + '&gt;</div>' +
         '</div>' +
         '<span class="pill pill-pending">pending</span>' +

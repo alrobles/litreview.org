@@ -1,19 +1,21 @@
-"""GitHub OAuth for LitReview — digital responsibility signature.
+"""OAuth for LitReview — digital responsibility signature (GitHub + ORCID).
 
 Flows:
-  GET  /auth/login?return_to=/submit.html   -> 302 to GitHub authorize
-  GET  /auth/github/callback?code&state     -> exchange, mint session cookie
+  GET  /auth/login?return_to=/submit.html        -> 302 to GitHub authorize
+  GET  /auth/github/callback?code&state          -> exchange, mint session cookie
+  GET  /auth/orcid/login?return_to=/submit.html  -> 302 to ORCID authorize
+  GET  /auth/orcid/callback?code&state           -> exchange, mint session cookie
   GET  /auth/me                             -> {user} or 401
   POST /auth/logout                         -> clear cookie
 
 Sessions are STATELESS: a signed (HMAC) httpOnly cookie carrying the verified
-GitHub identity. No server-side session store. The OAuth `state` is stored
-in-memory with a TTL; the callback consumes it once (CSRF protection).
+identity (GitHub or ORCID). No server-side session store. The OAuth `state`
+is stored in-memory with a TTL; the callback consumes it once (CSRF).
 
-This uses a DEDICATED GitHub OAuth App for litreview.org — intentionally
-isolated from the agenticplug/ecoseek OAuth app. A login here proves control
-of a GitHub account (digital signature), not humanness; a human-verification
-survey can be layered on later without changing this module.
+GitHub uses a DEDICATED OAuth App for litreview.org — isolated from
+agenticplug/ecoseek. ORCID uses the standard ORCID public API (/authenticate).
+A login proves control of an identity (digital signature), not humanness; a
+human-verification survey can be layered on later.
 """
 from __future__ import annotations
 
@@ -37,10 +39,18 @@ SESSION_SECRET = os.environ.get("LITREVIEW_SESSION_SECRET", "")
 SESSION_TTL = int(os.environ.get("LITREVIEW_SESSION_TTL", str(7 * 86400)))  # 7 days
 COOKIE_NAME = "litreview_session"
 
-AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
-TOKEN_URL = "https://github.com/login/oauth/access_token"
-USER_URL = "https://api.github.com/user"
-SCOPE = "read:user user:email"
+GH_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
+GH_TOKEN_URL = "https://github.com/login/oauth/access_token"
+GH_USER_URL = "https://api.github.com/user"
+GH_SCOPE = "read:user user:email"
+
+# ORCID (public API, scope /authenticate)
+ORCID_CLIENT_ID = os.environ.get("ORCID_CLIENT_ID", "")
+ORCID_CLIENT_SECRET = os.environ.get("ORCID_CLIENT_SECRET", "")
+ORCID_AUTHORIZE_URL = os.environ.get("ORCID_AUTHORIZE_URL", "https://orcid.org/oauth/authorize")
+ORCID_TOKEN_URL = os.environ.get("ORCID_TOKEN_URL", "https://orcid.org/oauth/token")
+ORCID_PUB_URL = os.environ.get("ORCID_PUB_URL", "https://pub.orcid.org/v3.0")
+ORCID_SCOPE = "/authenticate"
 
 # in-memory OAuth state store: state -> {"return_to": str, "exp": ts}
 _STATE: dict[str, dict] = {}
@@ -49,6 +59,10 @@ _STATE_TTL = 600  # 10 minutes
 
 def oauth_configured() -> bool:
     return bool(CLIENT_ID and CLIENT_SECRET and SESSION_SECRET)
+
+
+def orcid_configured() -> bool:
+    return bool(ORCID_CLIENT_ID and ORCID_CLIENT_SECRET and SESSION_SECRET)
 
 
 # ---------- state (CSRF) ----------
@@ -89,6 +103,7 @@ def mint_session(user: dict) -> str:
         "name": user.get("name"),
         "email": user.get("email"),
         "avatar": user.get("avatar_url"),
+        "provider": user.get("provider", "github"),
         "exp": int(time.time()) + SESSION_TTL,
     }
     payload = _b64(json.dumps(body, ensure_ascii=False).encode())
@@ -133,11 +148,22 @@ def build_authorize_url(state: str) -> str:
     q = urllib.parse.urlencode({
         "client_id": CLIENT_ID,
         "redirect_uri": f"{BASE_URL}/auth/github/callback",
-        "scope": SCOPE,
+        "scope": GH_SCOPE,
         "state": state,
         "allow_signup": "true",
     })
-    return f"{AUTHORIZE_URL}?{q}"
+    return f"{GH_AUTHORIZE_URL}?{q}"
+
+
+def build_orcid_authorize_url(state: str) -> str:
+    q = urllib.parse.urlencode({
+        "client_id": ORCID_CLIENT_ID,
+        "response_type": "code",
+        "scope": ORCID_SCOPE,
+        "redirect_uri": f"{BASE_URL}/auth/orcid/callback",
+        "state": state,
+    })
+    return f"{ORCID_AUTHORIZE_URL}?{q}"
 
 
 def exchange_code(code: str) -> Optional[dict]:
@@ -148,7 +174,7 @@ def exchange_code(code: str) -> Optional[dict]:
         "code": code,
         "redirect_uri": f"{BASE_URL}/auth/github/callback",
     }).encode()
-    req = urllib.request.Request(TOKEN_URL, data=data, method="POST",
+    req = urllib.request.Request(GH_TOKEN_URL, data=data, method="POST",
                                  headers={"Accept": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
@@ -157,7 +183,7 @@ def exchange_code(code: str) -> Optional[dict]:
         return None
     if tok.get("error") or not tok.get("access_token"):
         return None
-    ureq = urllib.request.Request(USER_URL,
+    ureq = urllib.request.Request(GH_USER_URL,
                                   headers={"Authorization": f"Bearer {tok['access_token']}",
                                            "Accept": "application/vnd.github+json",
                                            "User-Agent": "litreview-broker"})
@@ -175,5 +201,53 @@ def exchange_code(code: str) -> Optional[dict]:
         "email": user.get("email"),
         "avatar_url": user.get("avatar_url"),
         "provider": "github",
+        "verified_at": time.time(),
+    }
+
+
+def exchange_orcid_code(code: str) -> Optional[dict]:
+    """Exchange an ORCID auth code for the ORCID iD + name (public API)."""
+    data = urllib.parse.urlencode({
+        "client_id": ORCID_CLIENT_ID,
+        "client_secret": ORCID_CLIENT_SECRET,
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": f"{BASE_URL}/auth/orcid/callback",
+        "scope": ORCID_SCOPE,
+    }).encode()
+    req = urllib.request.Request(ORCID_TOKEN_URL, data=data, method="POST",
+                                 headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            tok = json.loads(resp.read())
+    except Exception:
+        return None
+    orcid = tok.get("orcid", "")
+    if tok.get("error") or not orcid:
+        return None
+    # best-effort public email from the public record (scope /authenticate may
+    # not include it; that's fine — name + iD are the core identity)
+    email = None
+    try:
+        preq = urllib.request.Request(
+            f"{ORCID_PUB_URL}/{orcid}/person",
+            headers={"Accept": "application/json",
+                     "Authorization": f"Bearer {tok.get('access_token', '')}"})
+        with urllib.request.urlopen(preq, timeout=10) as resp:
+            person = json.loads(resp.read())
+        emails = person.get("emails", {}).get("email", []) or []
+        for e in emails:
+            if e.get("visibility") == "public" and e.get("email"):
+                email = e["email"]
+                break
+    except Exception:
+        pass
+    return {
+        "login": orcid,
+        "id": orcid,
+        "name": tok.get("name") or orcid,
+        "email": email,
+        "avatar_url": None,
+        "provider": "orcid",
         "verified_at": time.time(),
     }

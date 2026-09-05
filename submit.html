@@ -25,8 +25,11 @@
 
   <div id="auth-box" class="form-box" style="margin-bottom:1.25rem;display:none">
     <div id="auth-loggedout">
-      <p class="hint" style="margin-bottom:.5rem"><strong>Login required.</strong> Submitting a review is a digital signature: your GitHub identity is recorded as the responsible author of this submission.</p>
-      <a id="login-btn" class="btn btn-primary" href="/auth/login?return_to=/submit.html">⇪ Login with GitHub</a>
+      <p class="hint" style="margin-bottom:.5rem"><strong>Login required.</strong> Submitting a review is a digital signature: your identity is recorded as the responsible author of this submission.</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <a id="login-btn" class="btn btn-primary" href="/auth/login?return_to=/submit.html">⇪ Login with GitHub</a>
+        <a id="login-orcid-btn" class="btn" href="/auth/orcid/login?return_to=/submit.html" style="display:none">🔗 Login with ORCID iD</a>
+      </div>
     </div>
     <div id="auth-loggedin" style="display:none">
       <p class="hint" style="margin-bottom:.5rem">Signed in as <strong id="auth-name"></strong> <span id="auth-login" class="faint"></span> — your identity is attached to this submission as its responsible party.</p>
@@ -134,6 +137,10 @@ fetch('/auth/me', { credentials: 'same-origin' })
       loggedIn.style.display = 'none';
       loggedOut.style.display = 'block';
       form.style.display = 'none';
+      // show ORCID button only if the provider is configured (probe 503)
+      fetch('/auth/orcid/login', { method: 'HEAD' }).then(function (r) {
+        document.getElementById('login-orcid-btn').style.display = (r.status === 200 || r.status === 302) ? 'inline-block' : 'none';
+      }).catch(function () { /* keep hidden */ });
     }
   })
   .catch(function () {
