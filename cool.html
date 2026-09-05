@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cool palette demo — LitReview — Expert-Written, AI-Assisted Literature Reviews</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An open repository of literature reviews written by scientists with AI assistance, organized like arXiv — with identifiers, abstract pages, and open formats.">
+<link rel="stylesheet" href="/static/css/style-cool.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand"><span>Lit</span>Review</a>
+  <div class="nav-links">
+    <a href="/browse.html">Browse</a>
+    <a href="/submit.html">Submit</a>
+    <a href="/about.html">About</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-blobs" aria-hidden="true"><span></span><span></span><span></span></div>
+  <p class="domain">litreview.org</p>
+  <h1 class="reveal-title">Literature reviews written by scientists,<br>with AI as a writing partner</h1>
+  <p>Every review here is written and owned by a human scientist. Agentic AI is used openly as a drafting, synthesis, and fact-checking partner — it is declared on every review, never hidden, never a disqualifier.</p>
+  <div class="hero-actions">
+    <a href="/browse.html" class="btn btn-primary">Browse reviews</a>
+    <a href="/submit.html" class="btn btn-outline">Submit a review</a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="scroll-animate">
+    <div class="row-between" style="align-items:center; margin-bottom:1.5rem">
+      <h2 class="section-title" style="margin:0">Recent submissions</h2>
+      <a href="/browse.html" class="small">View all →</a>
+    </div>
+    <div id="recent-listings" class="stack"></div>
+  </section>
+
+  <section class="spaced scroll-animate">
+    <div class="grid-3">
+      <div class="feature-card scroll-animate">
+        <span class="feature-icon" aria-hidden="true">✍️</span>
+        <h3>Expert-written, AI-assisted</h3>
+        <p class="small muted">Reviews are written and submitted by scientists, with AI as a drafting, synthesis, and fact-checking aid. Authors own their text.</p>
+      </div>
+      <div class="feature-card scroll-animate">
+        <span class="feature-icon" aria-hidden="true">📄</span>
+        <h3>Open formats</h3>
+        <p class="small muted">Every review ships as rendered HTML and plain Markdown source — free to read, download, and reuse.</p>
+      </div>
+      <div class="feature-card scroll-animate">
+        <span class="feature-icon" aria-hidden="true">🔬</span>
+        <h3>Organized by area</h3>
+        <p class="small muted">Starting with Ecology &amp; Evolution and Computer Science. More basic sciences coming soon.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <a href="https://github.com/alrobles/litreview.org" class="mx-2" target="_blank" rel="noopener">GitHub</a> ·
+  Ecology &amp; Evolution · Computer Science<br><br>
+  LitReview © 2026 · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · Citable literature reviews, written by scientists with AI assistance
+</footer>
+
+<script src="/static/js/common.js"></script>
+<script>
+loadData().then(function (data) {
+  const list = document.getElementById('recent-listings');
+  data.reviews.filter(function (r) { return r.status !== 'hidden'; }).slice(0, 3).forEach(function (r, i) {
+    const a = document.createElement('a');
+    a.href = '/abs.html?id=' + encodeURIComponent(r.id);
+    a.className = 'card scroll-animate';
+    a.style.transitionDelay = (i * 0.08) + 's';
+    a.innerHTML =
+      '<div class="row-between">' +
+        '<div>' +
+          '<div class="id-line">' + escapeHtml(r.id) + ' <span class="faint">[' + escapeHtml(r.date) + ']</span></div>' +
+          '<div class="title">' + escapeHtml(r.title) + '</div>' +
+          '<div class="auth">' + escapeHtml(r.authors.join(', ')) + '</div>' +
+          (r.ai_assist ? '<span class="pill pill-ai">AI-assisted</span> ' : '') +
+        '</div>' +
+        '<span class="pill pill-area">' + escapeHtml(areaName(data.areas, r.area)) + '</span>' +
+      '</div>';
+    list.appendChild(a);
+    if (window.observeScrollAnimate) observeScrollAnimate(a);
+  });
+}).catch(function () {
+  document.getElementById('recent-listings').innerHTML = '<p class="empty">Could not load reviews.</p>';
+});
+</script>
+</body>
+</html>

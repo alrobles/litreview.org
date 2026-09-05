@@ -55,7 +55,7 @@ body {
   flex-direction: column;
   transition: background .25s ease, color .25s ease;
   line-height: 1.6;
-  cursor: url('/static/images/cursor.svg') 7 7, auto;
+  cursor: url('/static/images/cursor.svg') 16 2, auto;
 }
 
 a { color: var(--accent-teal); text-decoration: none; }
@@ -556,7 +556,7 @@ details.sub-details summary { cursor: pointer; color: var(--text-muted); font-si
     transform: none !important;
   }
 }
-/* Login buttons (GitHub/ORCID logos) — preserved from public tree */
+/* Login buttons (GitHub/ORCID logos) — for all palette props */
 .btn-login { display: inline-flex; align-items: center; gap: .5rem; }
 .login-icon { width: 1rem; height: 1rem; flex: none; vertical-align: middle; }
 html.dark .login-icon[src$="github-mark.svg"] { filter: brightness(0) invert(1); }
