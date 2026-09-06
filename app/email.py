@@ -104,7 +104,7 @@ def _render_report(report: Optional[dict]) -> str:
         '<table style="font-size:14px;border-collapse:collapse;width:100%">'
         + "".join(rows) +
         f'<tr><td style="padding:6px 8px;border-bottom:1px solid #e8efe9;color:#2d6a4f;'
-        f'font-weight:600">AI quality score</td>'
+        f'font-weight:600">Impact index</td>'
         f'<td style="padding:6px 8px;border-bottom:1px solid #e8efe9">{impact_html}</td></tr>'
         '</table>'
         f'<p style="font-size:12px;color:#8aa898;margin:10px 0 0">{flags_html and "The review may be improved by addressing: " or ""}'
@@ -172,7 +172,7 @@ def notify_auth_decision(kind: str, submission: dict, rid: str = "",
     author's contact email, contact_email, title, area — with reviewer name).
     `report` (optional) is the AI screening score dict; when provided the
     email includes the author-facing 'AI reviewer report' block explaining
-    the impact index (internal key). Returns True if sent (or author email missing), False.
+    the impact index. Returns True if sent (or author email missing), False.
     """
     email = "submitted_by" in submission and submission["submitted_by"].get("email")
     if not email:
@@ -190,3 +190,43 @@ def notify_auth_decision(kind: str, submission: dict, rid: str = "",
         "reviewer": (submission.get("reviewed_by") or {}).get("name", ""),
     }, report=report)
     return _send(email, subject, body, cc=EDITOR_CC or None)
+
+
+def send_invite_email(email: str, token: str, role: str,
+                      invited_by: str, expires_at: str) -> bool:
+    """Send an editorial-panel invitation email with the accept link."""
+    link = f"{BASE_URL}/join.html?invite={token}"
+    expires = ""
+    try:
+        from datetime import datetime, timezone
+        expires = (datetime.fromisoformat(expires_at)
+                   .astimezone().strftime("%b %d, %Y"))
+    except Exception:
+        expires = expires_at
+    invite_html = (
+        '<div style="max-width:560px;margin:0 auto;padding:32px 20px">'
+        '<div style="background:#fff;border:1px solid #d8e6d7;border-radius:12px;padding:28px">'
+        '<div style="font-size:15px;letter-spacing:2px;color:#2d6a4f;margin-bottom:18px">'
+        'AI <span style="font-weight:bold">LitReview</span></div>'
+        '<h1 style="font-size:22px;margin:0 0 12px;color:#2d6a4f">You are invited to the '
+        'LitReview editorial panel</h1>'
+        f'<p style="font-size:15px;line-height:1.6;margin:0 0 16px">'
+        f'{_html.escape(invited_by)} has invited you to join the editorial panel of '
+        f'<strong>LitReview</strong> — an open repository of literature reviews in the '
+        f'basic sciences — with the role <strong>{_html.escape(role)}</strong>.</p>'
+        f'<p style="font-size:14px;color:#5a7266;margin:0 0 16px">This invitation is '
+        f'personal: you must accept it with the GitHub account whose email matches '
+        f'<strong>{_html.escape(email)}</strong>. It expires on '
+        f'<strong>{_html.escape(expires)}</strong>.</p>'
+        f'<a href="{link}" style="display:inline-block;background:#2d6a4f;color:#fff;'
+        f'text-decoration:none;padding:12px 20px;border-radius:8px;font-size:14px;'
+        f'font-family:system-ui,sans-serif">Accept with GitHub</a>'
+        f'<p style="font-size:12px;color:#8aa898;margin:22px 0 0;line-height:1.5">'
+        f'If you did not expect this invitation, you can ignore it. '
+        f'LitReview.org · contact@litreview.org</p>'
+        '</div></div>'
+    )
+    body = ('<!doctype html><html><body '
+            'style="margin:0;padding:0;background:#f4f7f5;font-family:Georgia,'
+            '\'Times New Roman\',serif;color:#172820">' + invite_html + '</body></html>')
+    return _send(email, "[LitReview] You are invited to the editorial panel", body)

@@ -1,0 +1,12 @@
+{
+  "members": [
+    {
+      "login": "alrobles",
+      "role": "admin",
+      "email": "a.l.robles.fernandez@gmail.com",
+      "status": "active",
+      "invited_by": "bootstrap",
+      "joined_at": "2026-09-06T00:00:00Z"
+    }
+  ]
+}

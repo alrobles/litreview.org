@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Join the editorial panel — AI LitReview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand"><img src="/static/vendor/img/ai-litreview-logo.svg" alt="AI LitReview" class="brand-logo"></a>
+  <div class="nav-links">
+    <a href="/browse.html">Browse</a>
+    <a href="/submit.html">Submit</a>
+    <a href="/review-process.html">Review process</a>
+    <a href="/about.html">About</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+  </div>
+</nav>
+
+<main class="container narrow">
+  <h1 class="page-title">Editorial panel invitation</h1>
+  <div id="join-box"><p class="empty">Loading invitation…</p></div>
+</main>
+
+<footer class="footer">
+  AI LitReview © 2026 · <a href="mailto:contact@litreview.org">✉️ contact@litreview.org</a>
+</footer>
+
+<script src="/static/js/common.js"></script>
+<script>
+const TOKEN = new URLSearchParams(location.search).get('invite') || '';
+const box = document.getElementById('join-box');
+
+function render(state, info) {
+  if (state === 'invalid') {
+    box.innerHTML = '<p class="empty">This invitation link is not valid.</p>';
+    return;
+  }
+  if (state === 'used') {
+    box.innerHTML = '<p class="empty">This invitation has already been used.</p>';
+    return;
+  }
+  if (state === 'expired') {
+    box.innerHTML = '<p class="empty">This invitation has expired. Ask the editor to send a new one.</p>';
+    return;
+  }
+  // valid
+  box.innerHTML =
+    '<div class="card" style="margin:1rem 0">' +
+      '<p><strong>You are invited</strong> to join the editorial panel of ' +
+      '<strong>AI LitReview</strong> with the role <strong>' + escapeHtml(info.role) + '</strong>.</p>' +
+      '<p>Invited by <strong>' + escapeHtml(info.created_by || 'an editor') + '</strong> · ' +
+      'invitation sent to <strong>' + escapeHtml(info.email) + '</strong> · ' +
+      'expires ' + escapeHtml(String(info.expires_at || '').slice(0, 10)) + '</p>' +
+      '<p class="small muted">This invitation is personal: you must accept it with the ' +
+      'GitHub account whose email matches the invitation address.</p>' +
+      '<button class="btn btn-primary" onclick="accept()">Accept with GitHub</button>' +
+    '</div>';
+  window.__info = info;
+}
+
+function accept() {
+  // OAuth flow: login (GitHub) then back to this join page, then POST accept
+  const me = fetch('/auth/me', { credentials: 'same-origin' });
+  me.then(function (r) {
+    if (!r.ok) {
+      location.href = '/auth/login?return_to=/join.html?invite=' + encodeURIComponent(TOKEN);
+      return;
+    }
+    return r.json().then(function (u) { return u; });
+  }).then(function (u) {
+    if (!u) return;
+    fetch('/api/v1/invites/' + encodeURIComponent(TOKEN) + '/accept', {
+      method: 'POST', credentials: 'same-origin'
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (res) {
+      if (res.ok) {
+        box.innerHTML = '<div class="card" style="margin:1rem 0">' +
+          '<h2 class="section-title" style="margin-top:0">🎉 ' + escapeHtml(res.j.message || 'Welcome!') + '</h2>' +
+          '<p>You are now part of the <strong>editorial panel</strong>. ' +
+          'Go to the <a href="/admin.html">moderation queue</a> to start.</p></div>';
+      } else {
+        const d = res.j.detail || 'Could not accept the invitation.';
+        box.innerHTML = '<p class="empty">' + escapeHtml(String(d)) + '</p>';
+      }
+    });
+  }).catch(function () {
+    location.href = '/auth/login?return_to=/join.html?invite=' + encodeURIComponent(TOKEN);
+  });
+}
+
+// load inv info
+fetch('/api/v1/invites/' + encodeURIComponent(TOKEN))
+  .then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (info) {
+    render(info ? info.state : 'invalid', info);
+  })
+  .catch(function () { render('invalid', null); });
+</script>
+</body>
+</html>

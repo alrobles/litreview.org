@@ -22,6 +22,7 @@ from fastapi import BackgroundTasks
 from fastapi.responses import RedirectResponse
 from app import auth
 from app import staff
+from app import invites
 from app.screening import run_screening, sanitize_html
 
 import markdown as md
@@ -335,6 +336,90 @@ async def admin_whoami(x_admin_token: Optional[str] = Header(None),
     """Return the current staff identity (role/via/login) or 401."""
     identity = check_admin(x_admin_token, request)
     return {"ok": True, **identity}
+
+
+# ---------- editorial invites (Fase A) ----------
+class InviteCreate(BaseModel):
+    email: EmailStr
+    role: str = "editorial"
+    expected_login: Optional[str] = None
+
+
+@app.post("/api/v1/admin/invites")
+async def create_invite(inv: InviteCreate,
+                        x_admin_token: Optional[str] = Header(None),
+                        request: Request = None):
+    """Create an editorial invitation and email the link. Admin only."""
+    identity = check_admin(x_admin_token, request)
+    require_admin(identity)
+    actor = identity.get("login") or "token-admin"
+    try:
+        res = invites.create_invite(ROOT, inv.email, inv.role, actor,
+                                     expected_login=inv.expected_login)
+    except invites.InviteError as e:
+        raise HTTPException(400, str(e))
+    # email the accept link (non-blocking)
+    from app.email import send_invite_email
+    send_invite_email(inv.email, res["token"], res["invite"]["role"],
+                      actor, res["invite"]["expires_at"])
+    return {"ok": True, "id": res["invite"]["id"],
+            "email": inv.email, "role": res["invite"]["role"],
+            "expires_at": res["invite"]["expires_at"]}
+
+
+@app.get("/api/v1/admin/invites")
+async def list_invites_ep(x_admin_token: Optional[str] = Header(None),
+                          request: Request = None):
+    """List invitations (no raw tokens). Admin only."""
+    identity = check_admin(x_admin_token, request)
+    require_admin(identity)
+    return {"invites": invites.list_invites(ROOT)}
+
+
+@app.get("/api/v1/invites/{token}")
+async def invite_info(token: str):
+    """Public: validate an invite token for the join page (no session)."""
+    inv, err = invites.get_invite_by_token(ROOT, token)
+    if err:
+        raise HTTPException(404, err)
+    assert inv is not None
+    # redact token_hash; do not leak created_by private info beyond name
+    return {
+        "id": inv.get("id"),
+        "email": inv.get("email"),
+        "role": inv.get("role"),
+        "created_by": inv.get("created_by"),
+        "expires_at": inv.get("expires_at"),
+        "used": inv.get("used", False),
+        "state": "used" if inv.get("used") else
+                 ("expired" if invites.validate_invite(inv) else "valid"),
+    }
+
+
+@app.post("/api/v1/invites/{token}/accept")
+async def accept_invite(token: str, request: Request = None):
+    """Accept an invite with the current GitHub session (editorial role)."""
+    sess = auth.read_session(request.cookies.get(auth.COOKIE_NAME, "")) if request else None
+    if not sess or sess.get("provider") != "github":
+        raise HTTPException(401, "Login with GitHub to accept the invitation")
+    # rate-limit the accept endpoint (anti brute force, same bucket pattern)
+    ip = request.client.host if request and request.client else "?"
+    rate_limited(ip)  # raises 429 if too many
+    try:
+        res = invites.accept_invite(ROOT, token, sess)
+    except invites.InviteError as e:
+        raise HTTPException(400, str(e))
+    return {"ok": True, "role": res["role"], "login": res["login"],
+            "message": f"Welcome to the editorial panel, {res['login']}!"}
+
+
+@app.get("/api/v1/admin/staff")
+async def list_staff(x_admin_token: Optional[str] = Header(None),
+                     request: Request = None):
+    """List staff members. Admin only."""
+    identity = check_admin(x_admin_token, request)
+    require_admin(identity)
+    return staff.staff_list(ROOT)
 
 @app.get("/api/v1/admin/submissions")
 async def list_submissions(x_admin_token: Optional[str] = Header(None),
