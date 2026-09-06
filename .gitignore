@@ -2,4 +2,4 @@
 .submissions/
 __pycache__/
 *.pyc
-.env
+.envdata/invites.json
