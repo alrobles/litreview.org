@@ -160,5 +160,5 @@ Register ORCID public API credentials at
 Reviews are written and owned by their named authors; they are published after
 curation under **CC BY 4.0** (attribution required). AI assistance is declared
 per review; use of AI tools never disqualifies a submission. Verify claims with
-the primary literature. See `docs/designs/2026-08-25-litreview-design.md` for
-the original design.
+the primary literature. Design docs and internal plans live in the private
+devel repository (alrobles/litreview-devel), not in this public tree.
