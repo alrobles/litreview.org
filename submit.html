@@ -14,6 +14,7 @@
   <div class="nav-links">
     <a href="/browse.html">Browse</a>
     <a href="/submit.html" class="active">Submit</a>
+    <a href="/review-process.html">Review process</a>
     <a href="/about.html">About</a>
     <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
   </div>
@@ -91,7 +92,23 @@
       <div id="preview" class="preview-pane prose"></div>
     </div>
     <div style="margin-top:1.5rem">
-      <label><input type="checkbox" id="consent" required> I confirm this is an original review written by the named authors (who may have used AI tools as writing aids), that the AI assistance declared above is accurate, and I agree to its publication under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> license.</label>
+      <label><input type="checkbox" id="consent" required> I confirm this is an original review written by the named authors (who may have used AI tools as writing aids), that the AI assistance declared above is accurate, and I agree to its publication under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> license. I understand my submission will be assessed by an automated AI review (impact index via the DiDAL protocol) and that the final decision rests with human moderators.</label>
+    </div>
+    <div class="full" style="margin-top:1rem">
+      <details class="sub-details">
+        <summary>How will my submission be scored? (impact index)</summary>
+        <div class="sub-body" style="white-space:normal;max-height:none">
+          <p>Every submission is screened by an AI scientific reviewer using the <a href="/review-process.html">DiDAL review protocol</a>. It produces an <strong>impact index (1–10)</strong> from five criteria:</p>
+          <ul style="margin:.5rem 0 0 1.2rem">
+            <li><strong>Originality</strong> — fresh angle or synthesis beyond a summary</li>
+            <li><strong>Methodological rigor</strong> — clear search/synthesis strategy</li>
+            <li><strong>Clarity</strong> — precise, well-structured writing</li>
+            <li><strong>Relevance</strong> — addresses a question that matters</li>
+            <li><strong>Bibliography</strong> — current, relevant references</li>
+          </ul>
+          <p style="margin-top:.75rem"><strong>To avoid surprises:</strong> reviews without a bibliography score low on that criterion; generic text without a described method scores low on rigor; the reviewer is deliberately strict (5–6 is average, 8+ exceptional). The score is <em>advisory</em> — a human moderator makes the final accept/reject decision, and a rejection email includes the breakdown so you know what to improve.</p>
+        </div>
+      </details>
     </div>
     <div class="form-status" id="status"></div>
     <button type="submit" class="btn btn-primary" id="submit-btn" style="margin-top:1.25rem">Submit review</button>

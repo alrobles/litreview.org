@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>How we review — AI LitReview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How submissions to LitReview are screened: the automated AI review (DiDAL protocol), the scientific impact index, and the human moderation that decides publication.">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand"><img src="/static/vendor/img/ai-litreview-logo.svg" alt="AI LitReview" class="brand-logo"></a>
+  <div class="nav-links">
+    <a href="/browse.html">Browse</a>
+    <a href="/submit.html">Submit</a>
+    <a href="/review-process.html" class="active">Review process</a>
+    <a href="/about.html">About</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+  </div>
+</nav>
+
+<main class="container narrow">
+  <h1 class="page-title">How we review submissions</h1>
+  <p class="subtitle">Before you submit, know exactly what happens to your preprint — the automated AI review, the impact index, and the human decision. No surprises.</p>
+
+  <section>
+    <h2 class="section-title">The short version</h2>
+    <ol class="prose">
+      <li><strong>You submit</strong> — with your verified GitHub or ORCID identity, which signs your submission as its responsible author.</li>
+      <li><strong>Automated screening</strong> runs immediately: security checks, spam detection, and an AI scientific review that produces an impact index.</li>
+      <li><strong>A human moderator decides</strong>. The AI's score is advisory — the final accept/reject is always made by a person.</li>
+      <li><strong>You get an email</strong> with the outcome, and (on rejection) the score breakdown so you know what to improve.</li>
+    </ol>
+  </section>
+
+  <section class="spaced">
+    <h2 class="section-title">The three screening layers</h2>
+    <p>Every submission passes through three automated gates before a human sees it:</p>
+    <div class="grid-3">
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">🛡️</span>
+        <h3>1. Security</h3>
+        <p class="small muted">Deterministic checks. LaTeX sources are scanned for shell escapes, file access, and non-whitelisted packages; Markdown for scripts and dangerous URLs. Insecure sources are never compiled or served.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">🧹</span>
+        <h3>2. Content quality</h3>
+        <p class="small muted">Heuristic filters for spam and low-effort text: lexical diversity, repetition, entropy, and known spam signals. High-confidence spam is blocked; borderline cases are flagged for the human.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">🧪</span>
+        <h3>3. Scientific review (AI)</h3>
+        <p class="small muted">An AI scientific reviewer — running the DiDAL review protocol — evaluates the text against a fixed rubric and produces the impact index. Details below.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="spaced">
+    <h2 class="section-title">What is the impact index?</h2>
+    <p>The <strong>impact index</strong> is a number from 1 to 10 that predicts the scientific impact and citation potential of <em>the review as written</em>. It is a prediction about the text, not a judgment about you.</p>
+    <p>It is built from five sub-scores, each 1–10:</p>
+    <table class="prose" style="width:100%;border-collapse:collapse">
+      <thead><tr><th style="text-align:left;padding:.4rem">Criterion</th><th style="text-align:left;padding:.4rem">What it measures</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:.4rem;border-top:1px solid var(--border)"><strong>Originality</strong></td><td style="padding:.4rem;border-top:1px solid var(--border)">Does the review bring a fresh angle, synthesis, or framing beyond a summary of papers?</td></tr>
+        <tr><td style="padding:.4rem;border-top:1px solid var(--border)"><strong>Methodological rigor</strong></td><td style="padding:.4rem;border-top:1px solid var(--border)">Is the review's approach clear — search strategy, inclusion criteria, or organizing framework?</td></tr>
+        <tr><td style="padding:.4rem;border-top:1px solid var(--border)"><strong>Clarity</strong></td><td style="padding:.4rem;border-top:1px solid var(--border)">Is the writing precise, well-structured, and easy to follow?</td></tr>
+        <tr><td style="padding:.4rem;border-top:1px solid var(--border)"><strong>Relevance</strong></td><td style="padding:.4rem;border-top:1px solid var(--border)">Does it address a question that matters to the field?</td></tr>
+        <tr><td style="padding:.4rem;border-top:1px solid var(--border)"><strong>Bibliography</strong></td><td style="padding:.4rem;border-top:1px solid var(--border)">Are the references current, relevant, and adequate for the scope?</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted">Each score is accompanied by a <strong>confidence</strong> value (0–1) and a one-line summary, and the model used is stored with the result. Scores are advisory — they inform the moderator, they never replace them.</p>
+  </section>
+
+  <section class="spaced">
+    <h2 class="section-title">What the impact index is NOT</h2>
+    <ul class="prose">
+      <li><strong>Not a journal impact factor.</strong> It predicts impact of this single review, not of a journal.</li>
+      <li><strong>Not a judgment of your worth as a scientist.</strong> It evaluates the text submitted, nothing else.</li>
+      <li><strong>Not a guarantee of citations.</strong> It is an AI prediction with a stated confidence, produced by a model that can make mistakes.</li>
+      <li><strong>Not the final decision.</strong> A human moderator reads the review and decides publication.</li>
+    </ul>
+  </section>
+
+  <section class="spaced">
+    <h2 class="section-title">The DiDAL review protocol</h2>
+    <p>The scientific review runs the <strong>DiDAL (Dialectical Dual-Agent Loop)</strong> protocol, adapted from the research pipeline developed for <a href="https://ecoseek.org" target="_blank" rel="noopener">EcoSeek</a>. It is a multi-stage AI review that does more than give a number:</p>
+    <ol class="prose">
+      <li><strong>Classify</strong> — the reviewer sizes up the submission to choose the right depth of review.</li>
+      <li><strong>Retrieve</strong> — it searches scientific literature (OpenAlex, CrossRef) for the key works in the review's area, to check whether the bibliography engages with the field.</li>
+      <li><strong>Draft</strong> — it writes a draft evaluation against the five criteria, citing what it found.</li>
+      <li><strong>Critique</strong> — a second AI reviewer re-examines the draft, challenges its claims, and catches over-or under-rating. This dialectic reduces single-model bias.</li>
+      <li><strong>Revise &amp; score</strong> — the two voices are reconciled into the final impact index, sub-scores, flags, and one-line summary.</li>
+    </ol>
+    <p class="small muted">The critique is stored with the screening record. Where no literature was retrievable (network limits, niche topic), the review proceeds with the text alone and notes the limitation. AI review is never the last word — the human moderator is.</p>
+  </section>
+
+  <section class="spaced">
+    <h2 class="section-title">So you don't get surprised</h2>
+    <ul class="prose">
+      <li><strong>No bibliography → low "Bibliography" score.</strong> It is nearly impossible to score high on a literature review without engaging the actual literature. If you don't cite, expect a low score.</li>
+      <li><strong>Generic text without method → low "Methodological rigor".</strong> Describe how you searched and synthesized; it is read as a method.</li>
+      <li><strong>Short, shallow, or filler-heavy → low overall.</strong> The AI reviewer is deliberately strict. A 5–6 is average; 8+ is exceptional.</li>
+      <li><strong>AI-assisted writing is fine.</strong> Using AI as a drafting and synthesis partner is the norm here — declare it openly, it never disqualifies.</li>
+      <li><strong>You can always improve and resubmit.</strong> A rejection email includes the score breakdown so you know what to fix.</li>
+    </ul>
+  </section>
+
+  <section class="spaced">
+    <h2 class="section-title">Privacy and transparency</h2>
+    <p>We store the screening record (scores, flags, one-line summary, the model used) alongside your submission. Your identity and contact details are visible only to the moderation team. Scores shown publicly on accepted reviews are labeled as AI-predicted and advisory. For full details see the <a href="/about.html">About</a> page.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  AI LitReview © 2026 · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · Citable literature reviews, written by scientists with AI assistance
+</footer>
+
+<script src="/static/js/common.js"></script>
+</body>
+</html>
