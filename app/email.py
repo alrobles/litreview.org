@@ -104,7 +104,7 @@ def _render_report(report: Optional[dict]) -> str:
         '<table style="font-size:14px;border-collapse:collapse;width:100%">'
         + "".join(rows) +
         f'<tr><td style="padding:6px 8px;border-bottom:1px solid #e8efe9;color:#2d6a4f;'
-        f'font-weight:600">Impact index</td>'
+        f'font-weight:600">AI quality score</td>'
         f'<td style="padding:6px 8px;border-bottom:1px solid #e8efe9">{impact_html}</td></tr>'
         '</table>'
         f'<p style="font-size:12px;color:#8aa898;margin:10px 0 0">{flags_html and "The review may be improved by addressing: " or ""}'
@@ -172,7 +172,7 @@ def notify_auth_decision(kind: str, submission: dict, rid: str = "",
     author's contact email, contact_email, title, area — with reviewer name).
     `report` (optional) is the AI screening score dict; when provided the
     email includes the author-facing 'AI reviewer report' block explaining
-    the impact index. Returns True if sent (or author email missing), False.
+    the impact index (internal key). Returns True if sent (or author email missing), False.
     """
     email = "submitted_by" in submission and submission["submitted_by"].get("email")
     if not email:

@@ -100,14 +100,14 @@ human moderator remains the only publish gate.
    character entropy, word count, spam keywords. High-confidence spam blocks
    approval; borderline cases are flagged for human review.
 3. **Scientific impact score** (LLM via OpenRouter, free models) — a 1-10
-   impact index (AI-predicted citation potential, like an impact factor for
+   AI quality score (advisory 1-10 AI rating of the review as written; NOT an
    THIS paper) with confidence, five rubric sub-scores (originality, rigor,
    clarity, relevance, bibliography), red flags, and a one-line summary.
    Model chain: `minimax/minimax-m3:free` → `nvidia/nemotron-3.5-lightning:free`,
    falling back to heuristic-only screening if the LLM is unavailable. The
    model and latency are stored alongside the score.
 
-On approval, `impact_index`, `score_model`, and the screening summary are
+On approval, `impact_index` (internal key), `score_model`, and the screening summary are
 stored in `data/reviews.json` and shown on the abstract page (⭐ badge) and
 browse listings. The admin queue shows the full screening panel per
 submission with a "re-run screening" button (`POST /api/v1/admin/screening/{sid}`).

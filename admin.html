@@ -133,7 +133,7 @@ function renderScreening(s) {
     (sc.model ? ' · model: ' + sc.model : '') +
     '</span></div>';
   if (sc.status === 'degraded') html += '<p class="empty">LLM unavailable — heuristic screening only.</p>';
-  if (ii.score) html += '<div class="scr-scores"><span class="scr-score">impact <strong>' + ii.score + '</strong>/10</span>' +
+  if (ii.score) html += '<div class="scr-scores"><span class="scr-score">quality <strong>' + ii.score + '</strong>/10</span>' +
     '<span class="small muted">conf ' + (ii.confidence || '') + '</span>';
   const s5 = sc.scores || {};
   html += (s5.originality ? ' <span class="tag">orig ' + s5.originality + '</span>' : '') +

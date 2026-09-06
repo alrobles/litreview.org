@@ -67,19 +67,22 @@ SPAM_WORDS = {
 SCORE_SYSTEM = (
     "You are the scientific quality assessor for LitReview, an open repository "
     "of literature reviews written by scientists with AI assistance. Score the "
-    "submitted review on five rubric dimensions and give an overall impact "
-    "index (a 1-10 predictor of the scientific impact / citation potential of "
-    "this review, like a journal impact factor but for THIS paper)."
+    "submitted review on five rubric dimensions and give an overall AI quality "
+    "score — a 1-10 advisory rating of the scientific quality and likely impact "
+    "of this review AS WRITTEN, based on your assessment of the text alone. It "
+    "is NOT a journal impact factor and NOT a prediction of real citation "
+    "counts; it is an honest quality rating that helps authors and readers "
+    "interpret the review."
     " Be tough and quantitative: 5-6 is average, 8+ exceptional, 3- weak. "
     "Judge ONLY the text provided; never penalize or praise the author, style "
     "extras, length, or lack of novelty alone. Base every score on textual "
     "evidence. For EACH dimension give a short rationale (1-2 sentences) "
     "explaining the score with concrete evidence from the text — this is what "
-    "the author receives to understand their score. For impact_index give a "
-    "brief 1-2 sentence explanation of the overall verdict. Answer with JSON "
-    "ONLY, no markdown, no prose: "
+    "the author receives to understand their score. For the overall AI quality "
+    "score give a brief 1-2 sentence explanation of the verdict. Answer with "
+    "JSON ONLY, no markdown, no prose: "
     '{"scores":{"originality":int,"methodological_rigor":int,"clarity":int,'
-    '"relevance":int,"bibliography":int},"impact_index":{"score":float,'
+    '"relevance":int,"bibliography":int},"ai_quality_score":{"score":float,'
     '"confidence":float},"rationale":{"originality":str,"methodological_rigor":str,'
     '"clarity":str,"relevance":str,"bibliography":str,"impact_index":str},'
     '"red_flags":[string],"one_line":string}'
@@ -270,7 +273,8 @@ def _parse_json(content: str) -> Optional[dict]:
 
 def _normalize_scores(parsed: dict) -> dict[str, Any]:
     scores = parsed.get("scores", {}) if isinstance(parsed.get("scores"), dict) else {}
-    ii = parsed.get("impact_index", {}) if isinstance(parsed.get("impact_index"), dict) else {}
+    ii_raw = parsed.get("ai_quality_score") or parsed.get("impact_index")
+    ii = ii_raw if isinstance(ii_raw, dict) else {}
     def num(v, lo=1, hi=10, default=5.0):
         try:
             f = float(v)

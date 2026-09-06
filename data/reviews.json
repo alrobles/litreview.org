@@ -25,6 +25,55 @@
   ],
   "reviews": [
     {
+      "id": "2609.00001",
+      "title": "Diffusion Models for Large Language Models: A Survey of Discrete Diffusion LLMs",
+      "authors": [
+        "Angel Luis Robles Fernandez"
+      ],
+      "area": "computer-science",
+      "abstract": "Diffusion models now rival autoregressive models in continuous domains such as image, video, and audio synthesis, and have recently been extended to discrete data---most notably language---giving rise to diffusion language models, which the literature refers to interchangeably as Diffusion LLMs (DLLMs) and discrete diffusion language models (dLLMs). Unlike the dominant autoregressive (AR) paradigm, which generates tokens sequentially in a left-to-right fashion, diffusion-based language models generate text through an iterative denoising process that operates on entire sequences in parallel \\cite{yu2025discrete, tseng2025diffusion}. This survey traces their evolution from continuous-space foundations to discrete formulations, categorizes representative models and techniques by diffusion space, generation strategy, and architecture, and examines applications, challenges, and future directions. We organize the field around the design choices that govern its quality--latency trade-off: the noise formulation, the generation strategy, and the post-training recipe.",
+      "keywords": [
+        "dLLM",
+        "difussion LLM"
+      ],
+      "ai_assist": "ecoseek.org Scientific Agent",
+      "impact_index": {
+        "score": 3.5,
+        "confidence": 0.55
+      },
+      "score_model": "minimax/minimax-m3:free",
+      "score_public": true,
+      "screening": {
+        "verdict": "review",
+        "security": "ok",
+        "soft_quality": {
+          "lexical_diversity": 0.292,
+          "bigram_repetition": 0.016,
+          "char_entropy": 4.71,
+          "word_count": 3616
+        },
+        "red_flags": [
+          "Multiple suspicious 'future-dated' references (e.g., shen2026codar with arXiv:2603..., jin2025discreteness with arXiv:2512..., fu2025efficientdlm with arXiv:2512...) — arXiv IDs and venues are inconsistent with stated publication years",
+          "Bibliography truncated mid-entry (campbell2022ctmc cuts off) — no complete reference list provided, so citation completeness cannot be verified",
+          "Several citations appear to be fabricated or non-existent (e.g., 'gulrajani2025gidd' for GIDD attributed to wrong author, 'nie2024mdm' misattributed, 'zekri2025sepo', 'zhao2025d1', 'zhu2025llada15', 'gong2025diffucoder', 'gong2024diffullama', 'ni2025quokka' lack verifiable provenance)",
+          "The review is essentially a structured summary/repackaging of existing surveys (yu2025discrete, tseng2025diffusion, li2025surveydlm) without substantive new synthesis, critique, or original analysis",
+          "Quantitative claims (e.g., 10× speedup, 16× compute gap, 64× matched-likelihood disadvantage, compute-optimal data budgets) are stated without derivation or critical examination of measurement methodology",
+          "Section on 'Challenges vs Future Directions' explicitly partitions itself but the partition adds little analytical depth; many 'future directions' simply restate known open problems",
+          "No formal methodology section describing literature search strategy, screening criteria, or coverage scope — undermines claims of being a systematic survey",
+          "The text contains no figures, tables, or comparison matrices that would be expected in a survey of this scope",
+          "Author name is placeholder 'Your Name'; no institutional affiliation or version provenance beyond 'v3 — DiDAL revision'"
+        ],
+        "one_line": "Competently structured but likely derivative survey of discrete diffusion LLMs whose impact is undermined by unverifiable/future-dated citations, an incomplete bibliography, and absence of original synthesis beyond existing surveys."
+      },
+      "date": "2026-09-06",
+      "status": "published",
+      "reviewed_by": {
+        "name": "Angel Robles",
+        "email": "a.l.robles.fernandez@gmail.com"
+      },
+      "version": 1
+    },
+    {
       "id": "2608.00006",
       "title": "Diffusion Models for Large Language Models: A Survey of Discrete Diffusion LLMs",
       "authors": [
