@@ -433,7 +433,7 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
         json.dumps(p, indent=2, ensure_ascii=False))
     # notificar al autor (no bloqueante: la moderación no depende del email)
     from app.email import notify_auth_decision
-    notify_auth_decision("accepted", p, rid)
+    notify_auth_decision("accepted", p, rid, report=scr.get("score", {}))
     return {"ok": True, "id": rid, "url": f"/abs.html?id={rid}"}
 
 @app.post("/api/v1/admin/reject/{sid}")
@@ -446,9 +446,10 @@ async def reject(sid: str, x_admin_token: Optional[str] = Header(None)):
     p["rejected_at"] = datetime.now(timezone.utc).isoformat()
     (SUBMISSIONS_DIR / sid / "payload.json").write_text(
         json.dumps(p, indent=2, ensure_ascii=False))
-    # notificar al autor (no bloqueante)
+    # notificar al autor (no bloqueante); incluye el reporte del revisor AI
     from app.email import notify_auth_decision
-    notify_auth_decision("rejected", p)
+    _scr = _read_screening(sid) or {}
+    notify_auth_decision("rejected", p, report=_scr.get("score", {}))
     return {"ok": True, "sid": sid, "status": "rejected"}
 
 @app.get("/healthz")

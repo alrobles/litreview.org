@@ -73,10 +73,16 @@ SCORE_SYSTEM = (
     " Be tough and quantitative: 5-6 is average, 8+ exceptional, 3- weak. "
     "Judge ONLY the text provided; never penalize or praise the author, style "
     "extras, length, or lack of novelty alone. Base every score on textual "
-    "evidence. Answer with JSON ONLY, no markdown, no prose: "
+    "evidence. For EACH dimension give a short rationale (1-2 sentences) "
+    "explaining the score with concrete evidence from the text — this is what "
+    "the author receives to understand their score. For impact_index give a "
+    "brief 1-2 sentence explanation of the overall verdict. Answer with JSON "
+    "ONLY, no markdown, no prose: "
     '{"scores":{"originality":int,"methodological_rigor":int,"clarity":int,'
     '"relevance":int,"bibliography":int},"impact_index":{"score":float,'
-    '"confidence":float},"red_flags":[string],"one_line":string}'
+    '"confidence":float},"rationale":{"originality":str,"methodological_rigor":str,'
+    '"clarity":str,"relevance":str,"bibliography":str,"impact_index":str},'
+    '"red_flags":[string],"one_line":string}'
 )
 
 
@@ -285,7 +291,17 @@ def _normalize_scores(parsed: dict) -> dict[str, Any]:
         },
         "red_flags": parsed.get("red_flags", []) if isinstance(parsed.get("red_flags"), list) else [],
         "one_line": str(parsed.get("one_line", ""))[:300],
+        "rationale": _normalize_rationale(parsed.get("rationale")),
     }
+
+
+def _normalize_rationale(raw) -> dict[str, str]:
+    """Rationale per dimension (author-facing). Falls back to '' per key."""
+    keys = ["originality", "methodological_rigor", "clarity", "relevance",
+            "bibliography", "impact_index"]
+    if not isinstance(raw, dict):
+        return {k: "" for k in keys}
+    return {k: str(raw.get(k, ""))[:400] for k in keys}
 
 
 def scientific_score(title: str, abstract: str, content: str) -> dict[str, Any]:

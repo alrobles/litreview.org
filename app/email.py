@@ -44,7 +44,76 @@ _TEMPLATE = """<!doctype html>
 </div></body></html>"""
 
 
-def _render(kind: str, data: dict) -> str:
+def _render_report(report: Optional[dict]) -> str:
+    """HTML block summarizing the AI reviewer report (author-facing)."""
+    if not report:
+        return ""
+    assert isinstance(report, dict)
+    scores = report.get("scores") if isinstance(report.get("scores"), dict) else {}
+    rationale = report.get("rationale") if isinstance(report.get("rationale"), dict) else {}
+    ii = report.get("impact_index") if isinstance(report.get("impact_index"), dict) else {}
+    red_flags = report.get("red_flags") if isinstance(report.get("red_flags"), list) else []
+    one_line = str(report.get("one_line") or "")
+    model = str(report.get("model") or "")
+
+    rows = []
+    labels = [
+        ("originality", "Originality"),
+        ("methodological_rigor", "Methodological rigor"),
+        ("clarity", "Clarity"),
+        ("relevance", "Relevance"),
+        ("bibliography", "Bibliography"),
+    ]
+    for key, label in labels:
+        sc = scores.get(key)
+        rat = str(rationale.get(key) or "")
+        cell = f'<strong>{sc if sc is not None else "—"}</strong>/10'
+        if rat:
+            cell += f'<br><span style="color:#5a7266;font-size:13px">{_html.escape(rat)}</span>'
+        rows.append(
+            f'<tr><td style="padding:6px 8px;border-bottom:1px solid #e8efe9;'
+            f'color:#2d6a4f;font-weight:600">{label}</td>'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #e8efe9">{cell}</td></tr>')
+
+    ii_score = ii.get("score")
+    conf = ii.get("confidence")
+    impact_html = (f"<strong>{ii_score}</strong>/10" if ii_score is not None else "—")
+    if conf is not None:
+        impact_html += f' <span style="color:#5a7266;font-size:13px">(confidence {conf})</span>'
+
+    flags_html = ""
+    if red_flags:
+        items = "".join(
+            f"<li style=\"margin:4px 0\">{_html.escape(str(f))}</li>" for f in red_flags
+        )
+        flags_html = (
+            '<div style="margin-top:14px;background:#fdf3ef;border:1px solid #f2d4c5;'
+            'border-radius:8px;padding:12px 14px">'
+            '<div style="font-weight:600;color:#9a3b1e;font-size:14px;margin-bottom:6px">'
+            'Flags identified by the reviewer</div>'
+            f'<ul style="margin:0;padding-left:18px;font-size:13px;color:#6b4a3a;line-height:1.5">{items}</ul>'
+            '</div>')
+
+    model_note = f" · model: {_html.escape(model)}" if model else ""
+    return (
+        '<div style="margin-top:20px;border-top:1px solid #d8e6d7;padding-top:16px">'
+        '<div style="font-size:13px;letter-spacing:1.5px;color:#5a7266;margin-bottom:8px">'
+        'AI REVIEWER REPORT</div>'
+        f'<p style="font-size:15px;line-height:1.6;margin:0 0 12px;font-style:italic">'
+        f'“{_html.escape(one_line)}”</p>'
+        '<table style="font-size:14px;border-collapse:collapse;width:100%">'
+        + "".join(rows) +
+        f'<tr><td style="padding:6px 8px;border-bottom:1px solid #e8efe9;color:#2d6a4f;'
+        f'font-weight:600">Impact index</td>'
+        f'<td style="padding:6px 8px;border-bottom:1px solid #e8efe9">{impact_html}</td></tr>'
+        '</table>'
+        f'<p style="font-size:12px;color:#8aa898;margin:10px 0 0">{flags_html and "The review may be improved by addressing: " or ""}'
+        f'This AI report is advisory — the publication decision was made by a human moderator.{model_note}</p>'
+        + flags_html +
+        '</div>')
+
+
+def _render(kind: str, data: dict, report: Optional[dict] = None) -> str:
     """Render the HTML body for an accept or reject notification."""
     rid = data.get("rid") or "—"
     title = _html.escape(data.get("title") or "")
@@ -68,7 +137,7 @@ def _render(kind: str, data: dict) -> str:
         link = f"{BASE_URL}/submit.html"
     return _TEMPLATE.format(heading=heading, heading_color=color, body=body,
                             rid=_html.escape(rid), title=title, area=area,
-                            reviewer=reviewer, link=link)
+                            reviewer=reviewer, link=link) + _render_report(report)
 
 
 def _send(to: str, subject: str, body: str, cc: Optional[str] = None) -> bool:
@@ -95,12 +164,15 @@ def _send(to: str, subject: str, body: str, cc: Optional[str] = None) -> bool:
         return False
 
 
-def notify_auth_decision(kind: str, submission: dict, rid: str = "") -> bool:
+def notify_auth_decision(kind: str, submission: dict, rid: str = "",
+                         report: Optional[dict] = None) -> bool:
     """Send an accepted/rejected notification for a submission.
 
     `submission` is the payload dict (must include submitted_by with the
     author's contact email, contact_email, title, area — with reviewer name).
-    Returns True if sent (or author email missing), False on failure.
+    `report` (optional) is the AI screening score dict; when provided the
+    email includes the author-facing 'AI reviewer report' block explaining
+    the impact index. Returns True if sent (or author email missing), False.
     """
     email = "submitted_by" in submission and submission["submitted_by"].get("email")
     if not email:
@@ -116,5 +188,5 @@ def notify_auth_decision(kind: str, submission: dict, rid: str = "") -> bool:
         "title": submission.get("title") or "",
         "area": submission.get("area") or "",
         "reviewer": (submission.get("reviewed_by") or {}).get("name", ""),
-    })
+    }, report=report)
     return _send(email, subject, body, cc=EDITOR_CC or None)
