@@ -425,8 +425,12 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
     p["status"] = "published"
     p["published_id"] = rid
     p["published_at"] = datetime.now(timezone.utc).isoformat()
+    p["reviewed_by"] = entry.get("reviewed_by", {})
     (SUBMISSIONS_DIR / sid / "payload.json").write_text(
         json.dumps(p, indent=2, ensure_ascii=False))
+    # notificar al autor (no bloqueante: la moderación no depende del email)
+    from app.email import notify_auth_decision
+    notify_auth_decision("accepted", p, rid)
     return {"ok": True, "id": rid, "url": f"/abs.html?id={rid}"}
 
 @app.post("/api/v1/admin/reject/{sid}")
@@ -439,6 +443,9 @@ async def reject(sid: str, x_admin_token: Optional[str] = Header(None)):
     p["rejected_at"] = datetime.now(timezone.utc).isoformat()
     (SUBMISSIONS_DIR / sid / "payload.json").write_text(
         json.dumps(p, indent=2, ensure_ascii=False))
+    # notificar al autor (no bloqueante)
+    from app.email import notify_auth_decision
+    notify_auth_decision("rejected", p)
     return {"ok": True, "sid": sid, "status": "rejected"}
 
 @app.get("/healthz")

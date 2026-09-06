@@ -138,10 +138,13 @@ submission accountable. It proves control of an identity — not humanness
 - **Gate**: `POST /api/v1/submit` returns 401 without a valid session;
   `payload.json` records `submitted_by` (login, id, name, provider,
   verified_at).
-- **Env**: `GITHUB_OAUTH_CLIENT_ID/_SECRET` (host file
+- Env: `GITHUB_OAUTH_CLIENT_ID/_SECRET` (host file
   `~/env/litreview-oauth-credentials`), `ORCID_CLIENT_ID/_SECRET` (host file
   `~/env/litreview-orcid-credentials`), `LITREVIEW_SESSION_SECRET` (host file
-  `~/env/litreview-session-secret`), `LITREVIEW_BASE_URL=https://litreview.org`.
+  `~/env/litreview-session-secret`), `LITREVIEW_BASE_URL=https://litreview.org`,
+  `RESEND_API_KEY` (host file `~/env/litreview-email-key`),
+  `LITREVIEW_EMAIL_FROM` e.g. `LitReview <preprints@litreview.org>`,
+  `LITREVIEW_EDITOR_CC` (editorial copy-to, optional).
 - nginx proxies `/auth/` to uvicorn (nginx.conf is bind-mounted into the
   container). Without a provider configured, its `/auth/*` returns 503
   (graceful); the submit gate still requires SOME session.
