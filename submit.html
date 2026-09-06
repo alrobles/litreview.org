@@ -93,6 +93,7 @@
     </div>
     <div style="margin-top:1.5rem">
       <label><input type="checkbox" id="consent" required> I confirm this is an original review written by the named authors (who may have used AI tools as writing aids), that the AI assistance declared above is accurate, and I agree to its publication under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> license. I understand my submission will be assessed by an automated AI review (impact index via the DiDAL protocol) and that the final decision rests with human moderators.</label>
+      <p style="margin-top:.6rem"><label><input type="checkbox" id="publish_score"> <strong>Publish my impact index on the review page</strong> <span class="faint">(optional)</span> — if accepted, the AI impact index (1–10 with confidence) will be shown publicly with your review as an advisory, AI-predicted quality signal. It helps readers and strengthens LitReview as a serious journal. Learn more in <a href="/review-process.html">How we review</a>.</label></p>
     </div>
     <div class="full" style="margin-top:1rem">
       <details class="sub-details">
@@ -209,7 +210,8 @@ form.addEventListener('submit', function (e) {
     content: content.value.trim(),
     format: fmtSel.value,
     contact_name: document.getElementById('contact_name').value.trim(),
-    contact_email: document.getElementById('contact_email').value.trim()
+    contact_email: document.getElementById('contact_email').value.trim(),
+    publish_score: document.getElementById('publish_score').checked
   };
   if (!document.getElementById('consent').checked) {
     status.className = 'form-status err'; status.style.display = 'block';

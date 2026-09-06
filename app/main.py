@@ -72,6 +72,7 @@ class Submission(BaseModel):
     format: Literal["markdown", "latex"] = "markdown"
     contact_name: str = Field(min_length=2, max_length=200)
     contact_email: EmailStr
+    publish_score: bool = False
 
     @field_validator("area")
     def area_must_exist(cls, v):
@@ -289,6 +290,7 @@ async def submit(request: Request, sub: Submission, background_tasks: Background
         "format": sub.format,
         "contact_name": sub.contact_name,
         "contact_email": sub.contact_email,
+        "publish_score": sub.publish_score,
         "received_at": datetime.now(timezone.utc).isoformat(),
         "status": "pending",
     }
@@ -389,6 +391,7 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
         "ai_assist": p.get("ai_assist", ""),
         "impact_index": scr.get("score", {}).get("impact_index", {}),
         "score_model": scr.get("score", {}).get("model", ""),
+        "score_public": bool(p.get("publish_score", False)),
         "screening": {
             "verdict": scr.get("overall", "ok"),
             "security": scr.get("security", {}).get("verdict", "ok"),

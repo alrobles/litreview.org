@@ -87,7 +87,7 @@ function renderList(area) {
           '<div class="auth">' + escapeHtml(r.authors.join(', ')) + '</div>' +
           (r.ai_assist ? '<span class="pill pill-ai">AI-assisted</span> ' : '') +
           '<span class="pill pill-fmt">' + ((r.format || 'markdown') === 'latex' ? 'LaTeX + PDF' : 'Markdown') + '</span> ' +
-          (r.impact_index && r.impact_index.score ? '<span class="pill pill-impact">⭐ ' + escapeHtml(String(r.impact_index.score)) + '</span> ' : '') +
+          (r.score_public && r.impact_index && r.impact_index.score ? '<span class="pill pill-impact">⭐ ' + escapeHtml(String(r.impact_index.score)) + '</span> ' : '') +
           '<p class="abs">' + escapeHtml(r.abstract.slice(0, 220)) + (r.abstract.length > 220 ? '…' : '') + '</p>' +
         '</div>' +
         '<span class="pill pill-area">' + escapeHtml(areaName(AREAS, r.area)) + '</span>' +
