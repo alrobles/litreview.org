@@ -1,7 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 52" role="img" aria-label="AI LitReview">
-  <!-- AI · LitReview, sin barra. ViewBox recortado al contenido: llena el lienzo -->
-  <text x="2" y="40" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-weight="300" font-size="30" fill="currentColor" dominant-baseline="middle" letter-spacing="2">AI</text>
-  <text x="92" y="40" font-family="Georgia, 'Times New Roman', serif"
-        font-weight="500" font-size="46" fill="currentColor" dominant-baseline="middle" letter-spacing="0.5">LitReview</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 52" role="img" aria-label="AI LitReview">
+  <!-- AI + LitReview lockup: tighter gap, centered -->
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="currentColor">
+    <tspan font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+           font-weight="300" font-size="28" letter-spacing="2">AI</tspan>
+    <tspan dx="10" font-family="Georgia, 'Times New Roman', serif"
+           font-weight="500" font-size="40" letter-spacing="0.5">LitReview</tspan>
+  </text>
 </svg>

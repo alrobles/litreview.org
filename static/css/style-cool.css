@@ -76,13 +76,15 @@ a:hover { text-decoration: underline; }
   z-index: 50;
 }
 .nav-brand {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: 1.35rem;
+  display: inline-flex;
+  align-items: center;
   color: var(--text);
-  letter-spacing: -0.02em;
 }
-.nav-brand span { color: var(--accent-teal); }
+.nav-brand .brand-logo {
+  height: 2rem;
+  width: auto;
+  display: block;
+}
 .nav-links {
   display: flex;
   gap: .5rem;
@@ -119,7 +121,7 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
 
 @media (max-width: 600px) {
   .nav { padding: .85rem 1rem; }
-  .nav-brand { font-size: 1.15rem; }
+  .nav-brand .brand-logo { height: 1.75rem; }
   .nav-links { gap: .15rem; }
   .nav-links a { padding: .45rem .55rem; font-size: .82rem; }
 }
@@ -205,19 +207,47 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   animation: auroraShift 20s ease-in-out infinite alternate;
 }
 
-.hero .domain {
-  text-transform: uppercase;
-  letter-spacing: .2em;
-  font-size: .7rem;
-  font-weight: 700;
-  color: var(--accent-teal);
-  margin: 0 0 .9rem;
+/* Hero: AI LitReview logo foreground entrance, content follows */
+.hero-logo {
+  display: block;
+  width: min(720px, 94vw);
+  height: auto;
+  position: relative;
+  z-index: 1;
+  margin: .25rem auto .75rem;
 }
+@keyframes heroLogoIn {
+  0%   { opacity: 0; transform: scale(.55) translateY(48px); }
+  50%  { opacity: 1; transform: scale(1.10) translateY(-8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.hero-logo {
+  opacity: 0;
+  animation: heroLogoIn 2s cubic-bezier(.2,.75,.3,1) forwards;
+}
+@keyframes heroContentIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: heroContentIn 1s ease-out 2.3s both;
+  margin-top: 4.5rem;
+}
+
+/* SVG logo is an <img>, so invert it in dark mode for contrast */
+html.dark .brand-logo,
+html.dark .hero-logo {
+  filter: invert(1);
+}
+
 .hero h1 {
   font-family: var(--font-serif);
-  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-size: clamp(1.75rem, 4.5vw, 3.2rem);
   font-weight: 400;
-  line-height: 1.08;
+  line-height: 0.95;
   letter-spacing: -0.025em;
   max-width: 54rem;
   margin: 0 auto 1.25rem;
@@ -236,16 +266,20 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   flex-wrap: wrap;
 }
 
-/* title reveal on load */
+/* title reveal on load: word-by-word stagger like xuemin.org */
 .reveal-title { display: block; }
 .reveal-line {
   display: block;
-  overflow: hidden;
   line-height: inherit;
+}
+.reveal-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
 }
 .reveal-text {
   display: inline-block;
-  transform: translateY(110%);
+  transform: translateY(120%);
   opacity: 0;
   transition: transform 1.1s cubic-bezier(.46,0,.02,1), opacity .9s ease;
   will-change: transform, opacity;
@@ -254,20 +288,42 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   transform: translateY(0);
   opacity: 1;
 }
-.reveal-title.is-visible .reveal-line:nth-child(1) .reveal-text { transition-delay: 0s; }
-.reveal-title.is-visible .reveal-line:nth-child(2) .reveal-text { transition-delay: .15s; }
-.reveal-title.is-visible .reveal-line:nth-child(3) .reveal-text { transition-delay: .3s; }
 
-/* scroll-triggered reveal animations */
+/* scroll-triggered animations (data-effect supported) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeftSmall {
+  from { opacity: 0; transform: translateX(-2rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInRightSmall {
+  from { opacity: 0; transform: translateX(2rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
 .scroll-animate {
   opacity: 0;
-  transform: translateY(2rem);
-  transition: opacity .8s cubic-bezier(.46,0,.02,1), transform .8s cubic-bezier(.46,0,.02,1);
+  visibility: hidden;
+  animation-fill-mode: both;
+  animation-duration: 1.2s;
+  animation-timing-function: cubic-bezier(.46,0,.02,1);
   will-change: transform, opacity;
 }
-.scroll-animate.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.scroll-animate.animated {
+  visibility: visible;
 }
 
 /* ---------- Layout ---------- */
@@ -549,7 +605,12 @@ details.sub-details summary { cursor: pointer; color: var(--text-muted); font-si
     transition-duration: .01ms !important;
   }
   html { scroll-behavior: auto; }
-  .scroll-animate,
+  .scroll-animate {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    animation: none !important;
+  }
   .reveal-title .reveal-text {
     opacity: 1 !important;
     transform: none !important;

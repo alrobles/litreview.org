@@ -82,8 +82,9 @@ a:hover { text-decoration: underline; }
   color: var(--text);
   letter-spacing: -0.02em;
 }
+.nav-brand span { color: var(--accent-teal); }
 .nav-brand img.brand-logo {
-  height: 2.5rem;
+  height: 1.9rem;
   width: auto;
   display: block;
   margin: 0;
@@ -174,6 +175,12 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   margin-top: 4.5rem;
 }
 
+/* SVG logo is an <img>, so invert it in dark mode for contrast */
+html.dark .brand-logo,
+html.dark .hero-logo {
+  filter: invert(1);
+}
+
 .hero-blobs {
   position: absolute;
   inset: 0;
@@ -241,19 +248,11 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   animation: auroraShift 20s ease-in-out infinite alternate;
 }
 
-.hero .domain {
-  text-transform: uppercase;
-  letter-spacing: .2em;
-  font-size: .7rem;
-  font-weight: 700;
-  color: var(--accent-teal);
-  margin: 0 0 .9rem;
-}
 .hero h1 {
   font-family: var(--font-serif);
-  font-size: clamp(1.9rem, 4.6vw, 3.9rem);
+  font-size: clamp(1.75rem, 4.5vw, 3.2rem);
   font-weight: 400;
-  line-height: 1.08;
+  line-height: 0.95;
   letter-spacing: -0.025em;
   max-width: 54rem;
   margin: 0 auto 1.25rem;
@@ -272,16 +271,20 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   flex-wrap: wrap;
 }
 
-/* title reveal on load */
+/* title reveal on load: word-by-word stagger like xuemin.org */
 .reveal-title { display: block; }
 .reveal-line {
   display: block;
-  overflow: hidden;
   line-height: inherit;
+}
+.reveal-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
 }
 .reveal-text {
   display: inline-block;
-  transform: translateY(110%);
+  transform: translateY(120%);
   opacity: 0;
   transition: transform 1.1s cubic-bezier(.46,0,.02,1), opacity .9s ease;
   will-change: transform, opacity;
@@ -290,20 +293,42 @@ html.dark .nav-links a.active { background: rgba(255,255,255,.07); }
   transform: translateY(0);
   opacity: 1;
 }
-.reveal-title.is-visible .reveal-line:nth-child(1) .reveal-text { transition-delay: 0s; }
-.reveal-title.is-visible .reveal-line:nth-child(2) .reveal-text { transition-delay: .15s; }
-.reveal-title.is-visible .reveal-line:nth-child(3) .reveal-text { transition-delay: .3s; }
 
-/* scroll-triggered reveal animations */
+/* scroll-triggered animations (data-effect supported) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeftSmall {
+  from { opacity: 0; transform: translateX(-2rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInRightSmall {
+  from { opacity: 0; transform: translateX(2rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
 .scroll-animate {
   opacity: 0;
-  transform: translateY(2rem);
-  transition: opacity .8s cubic-bezier(.46,0,.02,1), transform .8s cubic-bezier(.46,0,.02,1);
+  visibility: hidden;
+  animation-fill-mode: both;
+  animation-duration: 1.2s;
+  animation-timing-function: cubic-bezier(.46,0,.02,1);
   will-change: transform, opacity;
 }
-.scroll-animate.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.scroll-animate.animated {
+  visibility: visible;
 }
 
 /* ---------- Layout ---------- */
@@ -585,13 +610,18 @@ details.sub-details summary { cursor: pointer; color: var(--text-muted); font-si
     transition-duration: .01ms !important;
   }
   html { scroll-behavior: auto; }
-  .scroll-animate,
+  .scroll-animate {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    animation: none !important;
+  }
   .reveal-title .reveal-text {
     opacity: 1 !important;
     transform: none !important;
   }
 }
-/* Login buttons (GitHub/ORCID logos) — preserved from public tree */
+/* Login buttons (GitHub/ORCID logos) — for all palette props */
 .btn-login { display: inline-flex; align-items: center; gap: .5rem; }
 .login-icon { width: 1rem; height: 1rem; flex: none; vertical-align: middle; }
 html.dark .login-icon[src$="github-mark.svg"] { filter: brightness(0) invert(1); }

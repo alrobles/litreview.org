@@ -87,12 +87,18 @@
     return html;
   };
 
-  /* reveal titles on load: split by <br> and animate each line up */
+  /* reveal titles on load: split by words and stagger-animate each up */
   function initRevealTitles() {
     document.querySelectorAll('.reveal-title').forEach(function (el) {
-      var parts = el.innerHTML.split(/\s*<br\s*\/?>\s*/gi);
-      el.innerHTML = parts.map(function (line) {
-        return '<span class="reveal-line"><span class="reveal-text">' + (line || '&nbsp;') + '</span></span>';
+      var lines = el.innerHTML.split(/\s*<br\s*\/?>\s*/gi);
+      var wordIndex = 0;
+      el.innerHTML = lines.map(function (line) {
+        var words = (line || '&nbsp;').trim().split(/\s+/);
+        var wordSpans = words.map(function (word) {
+          var delay = (wordIndex++ * 0.05).toFixed(3) + 's';
+          return '<span class="reveal-word"><span class="reveal-text" style="transition-delay:' + delay + '">' + word + '</span></span>';
+        }).join(' ');
+        return '<span class="reveal-line">' + wordSpans + '</span>';
       }).join('');
       requestAnimationFrame(function () {
         el.classList.add('is-visible');
@@ -100,7 +106,7 @@
     });
   }
 
-  /* scroll-triggered fade-in animations */
+  /* scroll-triggered animations (data-effect + data-delay like xuemin.org) */
   var scrollObserver;
   function observeScrollAnimate(el) {
     if (!el || el.classList.contains('scroll-observed')) return;
@@ -109,8 +115,13 @@
       scrollObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            scrollObserver.unobserve(entry.target);
+            var target = entry.target;
+            var effect = target.dataset.effect || 'fadeIn';
+            var delay = target.dataset.delay || '0s';
+            target.style.animationDelay = delay;
+            target.style.animationName = effect;
+            target.classList.add('animated');
+            scrollObserver.unobserve(target);
           }
         });
       }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
