@@ -29,6 +29,25 @@
     </div>
   </div>
   <p class="count-line" id="count"></p>
+  <div class="admin-help" style="border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;margin:.75rem 0;background:var(--bg-alt,#f6f8f6);font-size:.85rem">
+    <details>
+      <summary style="cursor:pointer;font-weight:600">🧭 Admin reference — cómo usar esta cola</summary>
+      <ol style="margin:.5rem 0 0 1.2rem">
+        <li>Ve a <code>https://litreview.org/admin.html</code> (esta página).</li>
+        <li>Pega el token de admin en el campo <strong>Admin token</strong> de arriba y pulsa <strong>Load</strong>.
+          <ul style="margin:0 0 0 1.2rem">
+            <li>El token está en tu servidor: <code>cat ~/env/litreview-admin-token</code></li>
+            <li>Se recuerda en esta sesión (no hace falta repetirlo cada recarga; haz logout con la 🌓 cruz si quieres olvidarlo)</li>
+          </ul>
+        </li>
+        <li>Para cada submission: <strong>✓ Approve &amp; publish</strong> o <strong>✕ Reject</strong>.
+          El screening (seguridad, spam, AI quality score) corre solo — míralo en el panel de la submission.</li>
+        <li>Approve asigna el ID y publica (LaTeX se compila; el email de aceptación se manda al autor con el reporte del revisor). Reject rechaza y notifica con desglose.</li>
+        <li>Errores útiles: <em>401 = token malo</em> · <em>409 = screening aún corriendo o ya decidida</em> · <em>400 = bloqueada por seguridad/spam</em>.</li>
+        <li>Enlaces directos: <a href="/abs.html">reviews públicas</a> · <a href="/submit.html">formulario de envío</a> · <a href="/review-process.html">cómo se revisa</a></li>
+      </ol>
+    </details>
+  </div>
   <div id="queue"><p class="empty">Enter the admin token and press Load.</p></div>
 </main>
 
