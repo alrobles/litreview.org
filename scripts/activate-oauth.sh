@@ -32,6 +32,11 @@ ARGS=(-d --name litreview-site --restart unless-stopped -p 127.0.0.1:8670:80
   -e "OPENROUTER_API_KEY=$(cat ~/env/openrouter-key)"
   -e "LITREVIEW_SESSION_SECRET=$(cat ~/env/litreview-session-secret)"
   -e "LITREVIEW_BASE_URL=https://litreview.org"
+  -e "RESEND_API_KEY=$(python3 -c "
+vals=[l for l in open('/home/reumanlab/env/litreview-email-key').read().splitlines() if l.strip() and not l.strip().startswith('#')]
+print(vals[0] if vals else '')")"
+  -e "LITREVIEW_EMAIL_FROM=LitReview <onboarding@resend.dev>"
+  -e "LITREVIEW_EDITOR_CC=a.l.robles.fernandez@gmail.com"
 )
 
 if [ -n "$GH" ]; then

@@ -82,7 +82,8 @@ def _send(to: str, subject: str, body: str, cc: Optional[str] = None) -> bool:
     req = urllib.request.Request(
         RESEND_URL, data=json.dumps(payload).encode(),
         headers={"Authorization": f"Bearer {RESEND_API_KEY}",
-                 "Content-Type": "application/json"})
+                 "Content-Type": "application/json",
+                 "User-Agent": "LitReview/1.0 (https://litreview.org)"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             ok = resp.status == 200
