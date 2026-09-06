@@ -35,7 +35,7 @@ ARGS=(-d --name litreview-site --restart unless-stopped -p 127.0.0.1:8670:80
   -e "RESEND_API_KEY=$(python3 -c "
 vals=[l for l in open('/home/reumanlab/env/litreview-email-key').read().splitlines() if l.strip() and not l.strip().startswith('#')]
 print(vals[0] if vals else '')")"
-  -e "LITREVIEW_EMAIL_FROM=LitReview <onboarding@resend.dev>"
+  -e "LITREVIEW_EMAIL_FROM=LitReview <preprints@litreview.org>"
   -e "LITREVIEW_EDITOR_CC=a.l.robles.fernandez@gmail.com"
 )
 
