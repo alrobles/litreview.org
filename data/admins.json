@@ -1,0 +1,5 @@
+{
+  "admins": ["alrobles"],
+  "editorial": [],
+  "note": "Roles por login de GitHub. admins pueden approve/reject/publish; editorial solo ve la cola y el screening. El token estático (LITREVIEW_ADMIN_TOKEN) sigue funcionando como credencial de emergencia."
+}

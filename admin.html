@@ -16,6 +16,8 @@
     <a href="/submit.html">Submit</a>
     <a href="/review-process.html">Review process</a>
     <a href="/about.html">About</a>
+    <a href="/admin.html" title="Moderation">Admin</a>
+    <a href="mailto:contact@litreview.org" title="Contact">✉️</a>
     <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
   </div>
 </nav>
@@ -26,6 +28,7 @@
     <div style="display:flex; gap:.75rem; align-items:center">
       <input type="password" id="token" class="token-input" placeholder="Admin token" autocomplete="off">
       <button class="btn btn-primary btn-sm" onclick="loadSubs()">Load</button>
+      <button class="btn btn-secondary btn-sm" onclick="loginGithub()">🔑 Login with GitHub (admin)</button>
     </div>
   </div>
   <p class="count-line" id="count"></p>
@@ -65,6 +68,30 @@ function api(path, opts) {
   return fetch(path, opts);
 }
 function myToken() { return sessionStorage.getItem('litreview_admin_token') || ''; }
+
+function loginGithub() {
+  location.href = '/auth/login?return_to=/admin.html';
+}
+
+function showWho(role, login) {
+  const bar = document.getElementById('admin-bar');
+  const who = document.createElement('span');
+  who.className = 'whoami small muted';
+  who.style.cssText = 'margin-left:.5rem;font-size:.8rem';
+  who.textContent = role === 'admin' ? '👑 admin' : '👁 editorial';
+  if (login) who.textContent += ' · ' + login;
+  bar.appendChild(who);
+}
+
+// al cargar: si hay sesión GitHub con rol, cargar directo
+function trySession() {
+  api('/api/v1/admin/whoami').then(function (r) {
+    if (r.status === 401) return;
+    return r.json().then(function (j) {
+      if (j.role) { showWho(j.role, j.login); refresh(); }
+    });
+  }).catch(function () {});
+}
 
 function loadSubs() {
   const t = getToken();
@@ -200,6 +227,7 @@ function action(sid, kind, btn) {
     })
     .catch(function () { alert('Network error'); btn.disabled = false; });
 }
+trySession();
 </script>
 </body>
 </html>

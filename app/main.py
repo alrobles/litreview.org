@@ -21,6 +21,7 @@ from typing import Literal, Optional
 from fastapi import BackgroundTasks
 from fastapi.responses import RedirectResponse
 from app import auth
+from app import staff
 from app.screening import run_screening, sanitize_html
 
 import markdown as md
@@ -54,11 +55,32 @@ def rate_limited(ip: str):
         raise HTTPException(429, "Too many submissions from this IP. Please try again later.")
     q.append(now)
 
-def check_admin(x_admin_token: Optional[str] = Header(None)):
-    if not ADMIN_TOKEN or not x_admin_token:
-        raise HTTPException(401, "Admin credentials required")
-    if not secrets.compare_digest(x_admin_token, ADMIN_TOKEN):
-        raise HTTPException(401, "Invalid admin token")
+def check_admin(x_admin_token: Optional[str] = Header(None),
+                request: Request | None = None) -> dict:
+    """Resolve staff identity: legacy token OR GitHub session. Returns {role}.
+
+    - Static token (X-Admin-Token == LITREVIEW_ADMIN_TOKEN) -> role 'admin'.
+    - GitHub OAuth session cookie -> role from data/admins.json
+      (admins[] = 'admin', editorial[] = 'editorial').
+    Raises 401 if neither is valid staff.
+    """
+    # 1) legacy static token (emergency credential)
+    if x_admin_token and ADMIN_TOKEN and secrets.compare_digest(x_admin_token, ADMIN_TOKEN):
+        return {"role": "admin", "via": "token"}
+    # 2) GitHub session identity
+    if request is not None:
+        sess = auth.read_session(request.cookies.get(auth.COOKIE_NAME, ""))
+        if sess:
+            role = staff.role_for_login(sess.get("login", ""), ROOT)
+            if role:
+                return {"role": role, "via": "github", "login": sess.get("login")}
+    raise HTTPException(401, "Admin credentials required")
+
+
+def require_admin(identity: dict) -> None:
+    """Gate a decision endpoint: only the 'admin' role may pass."""
+    if not identity or identity.get("role") != "admin":
+        raise HTTPException(403, "Admin role required for this action")
 
 # ---------- models ----------
 class Submission(BaseModel):
@@ -307,9 +329,17 @@ async def admin_page():
         raise HTTPException(404)
     return FileResponse(f)
 
+@app.get("/api/v1/admin/whoami")
+async def admin_whoami(x_admin_token: Optional[str] = Header(None),
+                       request: Request = None):
+    """Return the current staff identity (role/via/login) or 401."""
+    identity = check_admin(x_admin_token, request)
+    return {"ok": True, **identity}
+
 @app.get("/api/v1/admin/submissions")
-async def list_submissions(x_admin_token: Optional[str] = Header(None)):
-    check_admin(x_admin_token)
+async def list_submissions(x_admin_token: Optional[str] = Header(None),
+                           request: Request = None):
+    check_admin(x_admin_token, request)
     out = []
     for d in sorted(SUBMISSIONS_DIR.iterdir(), reverse=True):
         if not d.is_dir():
@@ -332,8 +362,9 @@ async def list_submissions(x_admin_token: Optional[str] = Header(None)):
     return {"submissions": out}
 
 @app.get("/api/v1/admin/content/{sid}")
-async def submission_content(sid: str, x_admin_token: Optional[str] = Header(None)):
-    check_admin(x_admin_token)
+async def submission_content(sid: str, x_admin_token: Optional[str] = Header(None),
+                             request: Request = None):
+    check_admin(x_admin_token, request)
     if not re.fullmatch(r"[\w-]+", sid):
         raise HTTPException(400, "Bad sid")
     p = _read_payload(sid)
@@ -343,8 +374,9 @@ async def submission_content(sid: str, x_admin_token: Optional[str] = Header(Non
     return Response(f.read_text(), media_type="text/plain")
 
 @app.post("/api/v1/admin/screening/{sid}")
-async def rerun_screening(sid: str, x_admin_token: Optional[str] = Header(None)):
-    check_admin(x_admin_token)
+async def rerun_screening(sid: str, x_admin_token: Optional[str] = Header(None),
+                           request: Request = None):
+    check_admin(x_admin_token, request)
     if not re.fullmatch(r"[\w-]+", sid):
         raise HTTPException(400, "Bad sid")
     p = _read_payload(sid)
@@ -355,8 +387,10 @@ async def rerun_screening(sid: str, x_admin_token: Optional[str] = Header(None))
 
 
 @app.post("/api/v1/admin/approve/{sid}")
-async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
-    check_admin(x_admin_token)
+async def approve(sid: str, x_admin_token: Optional[str] = Header(None),
+                  request: Request = None):
+    identity = check_admin(x_admin_token, request)
+    require_admin(identity)
     if not re.fullmatch(r"[\w-]+", sid):
         raise HTTPException(400, "Bad sid")
     p = _read_payload(sid)
@@ -437,8 +471,10 @@ async def approve(sid: str, x_admin_token: Optional[str] = Header(None)):
     return {"ok": True, "id": rid, "url": f"/abs.html?id={rid}"}
 
 @app.post("/api/v1/admin/reject/{sid}")
-async def reject(sid: str, x_admin_token: Optional[str] = Header(None)):
-    check_admin(x_admin_token)
+async def reject(sid: str, x_admin_token: Optional[str] = Header(None),
+                 request: Request = None):
+    identity = check_admin(x_admin_token, request)
+    require_admin(identity)
     if not re.fullmatch(r"[\w-]+", sid):
         raise HTTPException(400, "Bad sid")
     p = _read_payload(sid)
